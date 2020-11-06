@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/amanbolat/furutsu/internal/config"
+	"github.com/amanbolat/furutsu/services/authsrv"
 	"github.com/amanbolat/furutsu/services/productsrv"
 	"github.com/jackc/pgx/v4"
 	"github.com/sirupsen/logrus"
@@ -24,7 +25,8 @@ func NewServer(cfg config.Config, logger *logrus.Logger) (*Server, error) {
 	}
 
 	productSrv := productsrv.NewProductService(conn)
-	r := NewRouter(productSrv)
+	authSrv := authsrv.NewAuthService(conn)
+	r := NewRouter(productSrv, authSrv)
 
 	s := Server{
 		router: r,

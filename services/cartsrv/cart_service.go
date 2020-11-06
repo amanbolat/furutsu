@@ -2,33 +2,49 @@ package cartsrv
 
 import (
 	"context"
+	"github.com/amanbolat/furutsu/datastore"
 	"github.com/amanbolat/furutsu/internal/cart"
-	"github.com/amanbolat/furutsu/internal/discount"
-	"github.com/jackc/pgx/v4"
 )
 
 type Service struct {
-	dbConn *pgx.Conn
+	repo datastore.Repository
 }
 
-func NewCartService(conn *pgx.Conn) *Service {
-	return &Service{dbConn: conn}
+func NewCartService(repo datastore.Repository) *Service {
+	return &Service{repo: repo}
 }
 
-func (s Service) GetCart(userId string, ctx context.Context) (cart.Cart, error) {
-	var c cart.Cart
-
-	return c, nil
+func (s Service) CreateCart(userId string, ctx context.Context) (cart.Cart, error) {
+	ds := datastore.NewCartDataStore(s.repo)
+	return ds.CreateCart(userId, ctx)
 }
 
-func (s Service) SetItemAmount(userId string, item cart.ItemLine, ctx context.Context) (cart.Cart, error) {
-	var c cart.Cart
+// func (s Service) GetCart(userId string, ctx context.Context) (cart.Cart, error) {
+// 	ds := datastore.NewCartDataStore(s.repo)
+//
+// 	c, err := ds.GetCartForUser(userId, ctx)
+// 	if err != nil {
+// 		return cart.Cart{}, err
+// 	}
+//
+// 	discSrv := discountsrv.NewService(s.repo)
+//
+// 	discountedCart, err := discSrv.ApplyDiscounts(c, ctx)
+// 	if err != nil {
+// 		return cart.Cart{}, err
+// 	}
+//
+// 	return discountedCart, nil
+// }
 
-	return c, nil
-}
-
-func (s Service) ApplyCoupon(userId string, coupon discount.Coupon, ctx context.Context) (cart.Cart, error) {
-	var c cart.Cart
-
-	return c, nil
-}
+// func (s Service) SetItemAmount(cartId string, productId string, ctx context.Context) (cart.Cart, error) {
+//
+//
+// 	return c, nil
+// }
+//
+// func (s Service) ApplyCoupon(userId string, coupon discount.Coupon, ctx context.Context) (cart.Cart, error) {
+// 	var c cart.Cart
+//
+// 	return c, nil
+// }

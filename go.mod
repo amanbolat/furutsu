@@ -3,7 +3,9 @@ module github.com/amanbolat/furutsu
 go 1.15
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/georgysavva/scany v0.2.7
+	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible
 	github.com/jackc/pgx/v4 v4.9.2
 	github.com/joho/godotenv v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0

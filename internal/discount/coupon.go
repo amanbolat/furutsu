@@ -1,10 +1,22 @@
 package discount
 
-import "time"
+import (
+	"time"
+)
 
 type Coupon struct {
-	ID string
-	Code string
-	Discount Discount
-	Expire time.Time
+	ID      string
+	Code    string
+	Name    string
+	Rule    Rule
+	Percent int
+	Expire  time.Time
+}
+
+func (c Coupon) GetPercentage() int {
+	return c.Percent
+}
+
+func (c Coupon) GetName() string {
+	return c.Name
 }

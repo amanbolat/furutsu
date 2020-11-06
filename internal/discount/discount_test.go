@@ -10,11 +10,11 @@ import (
 
 func TestRuleItemsAll_Check(t *testing.T) {
 	var testTable = []struct {
-		name    string
-		rule    discount.RuleItemsAll
-		inItems map[string]cart.ItemLine
-		outSet  map[string]int
-		outLeftItems  map[string]cart.ItemLine
+		name         string
+		rule         discount.RuleItemsAll
+		inItems      map[string]cart.Item
+		outSet       map[string]int
+		outLeftItems map[string]cart.Item
 	}{
 		{
 			name: "7 apples discount - true",
@@ -22,7 +22,7 @@ func TestRuleItemsAll_Check(t *testing.T) {
 				ProductID: "apple",
 				Amount:    7,
 			},
-			inItems: map[string]cart.ItemLine{
+			inItems: map[string]cart.Item{
 				"apple": {Product: product.Product{
 					ID: "apple",
 				},
@@ -30,7 +30,7 @@ func TestRuleItemsAll_Check(t *testing.T) {
 				},
 			},
 			outSet: map[string]int{"apple": 10},
-			outLeftItems: map[string]cart.ItemLine{
+			outLeftItems: map[string]cart.Item{
 				"apple": {Product: product.Product{
 					ID: "apple",
 				},
@@ -44,7 +44,7 @@ func TestRuleItemsAll_Check(t *testing.T) {
 				ProductID: "apple",
 				Amount:    7,
 			},
-			inItems: map[string]cart.ItemLine{
+			inItems: map[string]cart.Item{
 				"apple": {Product: product.Product{
 					ID: "apple",
 				},
@@ -52,7 +52,7 @@ func TestRuleItemsAll_Check(t *testing.T) {
 				},
 			},
 			outSet: nil,
-			outLeftItems: map[string]cart.ItemLine{
+			outLeftItems: map[string]cart.Item{
 				"apple": {Product: product.Product{
 					ID: "apple",
 				},
@@ -66,7 +66,7 @@ func TestRuleItemsAll_Check(t *testing.T) {
 				ProductID: "apple",
 				Amount:    7,
 			},
-			inItems: map[string]cart.ItemLine{
+			inItems: map[string]cart.Item{
 				"pear": {Product: product.Product{
 					ID: "pear",
 				},
@@ -74,7 +74,7 @@ func TestRuleItemsAll_Check(t *testing.T) {
 				},
 			},
 			outSet: nil,
-			outLeftItems: map[string]cart.ItemLine{
+			outLeftItems: map[string]cart.Item{
 				"pear": {Product: product.Product{
 					ID: "pear",
 				},
@@ -95,11 +95,11 @@ func TestRuleItemsAll_Check(t *testing.T) {
 
 func TestRuleItemsSet_Check(t *testing.T) {
 	var testTable = []struct {
-		name    string
-		rule    discount.RuleItemsSet
-		inItems map[string]cart.ItemLine
-		outSet  map[string]int
-		outLeftItems  map[string]cart.ItemLine
+		name         string
+		rule         discount.RuleItemsSet
+		inItems      map[string]cart.Item
+		outSet       map[string]int
+		outLeftItems map[string]cart.Item
 	}{
 		{
 			name: "4 pears, 2 bananas discount - 1 set",
@@ -109,7 +109,7 @@ func TestRuleItemsSet_Check(t *testing.T) {
 					"banana": 2,
 				},
 			},
-			inItems: map[string]cart.ItemLine{
+			inItems: map[string]cart.Item{
 				"pear": {Product: product.Product{
 					ID: "pear"},
 					Amount: 4,
@@ -120,7 +120,7 @@ func TestRuleItemsSet_Check(t *testing.T) {
 				},
 			},
 			outSet: map[string]int{"pear": 4, "banana": 2},
-			outLeftItems: map[string]cart.ItemLine{
+			outLeftItems: map[string]cart.Item{
 				"pear": {Product: product.Product{
 					ID: "pear"},
 					Amount: 0,
@@ -139,7 +139,7 @@ func TestRuleItemsSet_Check(t *testing.T) {
 					"banana": 2,
 				},
 			},
-			inItems: map[string]cart.ItemLine{
+			inItems: map[string]cart.Item{
 				"pear": {Product: product.Product{
 					ID: "pear"},
 					Amount: 10,
@@ -150,7 +150,7 @@ func TestRuleItemsSet_Check(t *testing.T) {
 				},
 			},
 			outSet: map[string]int{"pear": 8, "banana": 4},
-			outLeftItems: map[string]cart.ItemLine{
+			outLeftItems: map[string]cart.Item{
 				"pear": {Product: product.Product{
 					ID: "pear"},
 					Amount: 2,
@@ -169,7 +169,7 @@ func TestRuleItemsSet_Check(t *testing.T) {
 					"banana": 2,
 				},
 			},
-			inItems: map[string]cart.ItemLine{
+			inItems: map[string]cart.Item{
 				"pear": {Product: product.Product{
 					ID: "pear"},
 					Amount: 7,
@@ -180,7 +180,7 @@ func TestRuleItemsSet_Check(t *testing.T) {
 				},
 			},
 			outSet: nil,
-			outLeftItems: map[string]cart.ItemLine{
+			outLeftItems: map[string]cart.Item{
 				"pear": {Product: product.Product{
 					ID: "pear"},
 					Amount: 7,

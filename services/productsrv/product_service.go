@@ -16,21 +16,11 @@ func NewProductService(conn *pgx.Conn) *Service {
 }
 
 func (s Service) ListProducts(ctx context.Context) ([]product.Product, error) {
-	tx, err := s.dbConn.Begin(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	ds := datastore.NewProductDataStore(tx)
+	ds := datastore.NewProductDataStore(s.dbConn)
 	return ds.ListProducts(ctx)
 }
 
 func (s Service) GetProductById(id string, ctx context.Context) (product.Product, error) {
-	tx, err := s.dbConn.Begin(ctx)
-	if err != nil {
-		return product.Product{}, err
-	}
-
-	ds := datastore.NewProductDataStore(tx)
+	ds := datastore.NewProductDataStore(s.dbConn)
 	return ds.GetProductById(id, ctx)
 }

@@ -4,29 +4,72 @@ import (
 	"github.com/amanbolat/furutsu/internal/product"
 )
 
-type ItemLine struct {
+type Item struct {
+	Id string
 	Product product.Product
 	Amount int
 }
 
-type DiscountSet struct {
-	// ItemsSet represent set of multiple items and their amounts
+// ItemSet is set of items in cart which could have discounts
+// applied or not. Used for calculating totals and convenient
+// representation on client side
+type ItemsSet struct {
+	// Set represent set of multiple items and their amounts
 	// which share one discount
-	ItemsSet map[string]int
+	Set      map[string]int
 	Discount int
 }
 
-type Cart struct {
-	Items map[string]ItemLine
-	DiscountSets []DiscountSet
+type Coupon interface {
+	GetPercentage() int
+	GetName() string
 }
 
-func (c *Cart) AddProduct(p product.Product, amount int) {
-	if c.Items == nil {
-		c.Items = make(map[string]ItemLine)
+type Cart struct {
+	Id string
+	// Items is map items as of product_id:CartItem
+	Items map[string]Item
+	DiscountSets []ItemsSet
+	NonDiscountSet ItemsSet
+	Coupons []Coupon
+}
+
+func (c Cart) TotalSavings() int {
+	var total int
+	for _, set := range c.DiscountSets {
+		for productId, amount := range set.Set {
+			price := c.Items[productId].Product.Price
+			toPay := price * amount
+			saved := toPay * set.Discount / 100
+			total += saved
+		}
 	}
 
-	il := ItemLine{
+	return total
+}
+
+func (c Cart) TotalForPayment() int {
+	var total int
+
+	for _, item := range c.Items {
+		toPay := item.Product.Price * item.Amount
+		total += toPay
+	}
+
+	total -= c.TotalSavings()
+	return total
+}
+
+func (c *Cart) SetProductAmount(p product.Product, amount int) {
+	if c.Items == nil {
+		c.Items = make(map[string]Item)
+	}
+
+	if amount < 1 {
+		delete(c.Items, p.ID)
+	}
+
+	il := Item{
 		Product: p,
 		Amount:  amount,
 	}
