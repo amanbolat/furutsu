@@ -3,9 +3,10 @@ package datastore
 import (
 	"context"
 	"database/sql"
+	"time"
+
 	"github.com/amanbolat/furutsu/internal/product"
 	"github.com/georgysavva/scany/pgxscan"
-	"time"
 )
 
 type DbProduct struct {
@@ -18,16 +19,16 @@ type DbProduct struct {
 }
 
 type ProductDataStore struct {
-	querier pgxscan.Querier
+	repo Repository
 }
 
-func NewProductDataStore(q pgxscan.Querier) *ProductDataStore {
-	return &ProductDataStore{querier: q}
+func NewProductDataStore(repo Repository) *ProductDataStore {
+	return &ProductDataStore{repo: repo}
 }
 
 func (s ProductDataStore) ListProducts(ctx context.Context) ([]product.Product, error) {
 	var arr []DbProduct
-	err := pgxscan.Select(ctx, s.querier, &arr, `select * from product`)
+	err := pgxscan.Select(ctx, s.repo, &arr, `select * from product`)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +50,7 @@ func (s ProductDataStore) ListProducts(ctx context.Context) ([]product.Product, 
 
 func (s ProductDataStore) GetProductById(id string, ctx context.Context) (product.Product, error) {
 	var p product.Product
-	err := pgxscan.Select(ctx, s.querier, &p, `select * from product where id=$1`, id)
+	err := pgxscan.Select(ctx, s.repo, &p, `select * from product where id=$1`, id)
 	if err != nil {
 		return p, err
 	}

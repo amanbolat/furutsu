@@ -1,11 +1,12 @@
 package discount_test
 
 import (
+	"testing"
+
 	"github.com/amanbolat/furutsu/internal/cart"
 	"github.com/amanbolat/furutsu/internal/discount"
 	"github.com/amanbolat/furutsu/internal/product"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestRuleItemsAll_Check(t *testing.T) {

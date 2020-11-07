@@ -72,5 +72,3 @@ recLoop:
 
 	return discSet, items
 }
-
-

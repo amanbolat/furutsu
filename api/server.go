@@ -3,19 +3,21 @@ package api
 import (
 	"context"
 	"fmt"
-	"github.com/amanbolat/furutsu/internal/config"
-	"github.com/amanbolat/furutsu/services/authsrv"
-	"github.com/amanbolat/furutsu/services/productsrv"
-	"github.com/jackc/pgx/v4"
-	"github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
 	"time"
+
+	"github.com/amanbolat/furutsu/datastore"
+	"github.com/amanbolat/furutsu/internal/config"
+	"github.com/amanbolat/furutsu/services/authsrv"
+	"github.com/amanbolat/furutsu/services/cartsrv"
+	"github.com/amanbolat/furutsu/services/productsrv"
+	"github.com/sirupsen/logrus"
 )
 
 type Server struct {
-	router            *Router
-	logger            *logrus.Logger
+	router *Router
+	logger *logrus.Logger
 }
 
 func NewServer(cfg config.Config, logger *logrus.Logger) (*Server, error) {
@@ -26,7 +28,12 @@ func NewServer(cfg config.Config, logger *logrus.Logger) (*Server, error) {
 
 	productSrv := productsrv.NewProductService(conn)
 	authSrv := authsrv.NewAuthService(conn)
-	r := NewRouter(productSrv, authSrv)
+	cartSrv := cartsrv.NewCartService(datastore.NewPgxConn(conn))
+	r := NewRouter(RouterConfig{
+		ProductService: productSrv,
+		AuthService:    authSrv,
+		CartService:    cartSrv,
+	})
 
 	s := Server{
 		router: r,

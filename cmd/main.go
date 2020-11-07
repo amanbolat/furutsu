@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+
 	"github.com/amanbolat/furutsu/api"
 	"github.com/amanbolat/furutsu/internal/config"
 	"github.com/joho/godotenv"
@@ -12,7 +13,7 @@ import (
 var cfg config.Config
 var logger *logrus.Logger
 
-func main()  {
+func main() {
 	logger = logrus.New()
 	logger.SetFormatter(&logrus.TextFormatter{})
 	cfgFile := flag.String("config", "config", "path to the configuration file")

@@ -13,7 +13,7 @@ func convertJsonbToRule(m map[string]interface{}) discount.Rule {
 		r := discount.RuleItemsAll{}
 		for k, v := range m {
 			r.ProductID = k
-			r.Amount = v.(int)
+			r.Amount = int(v.(float64))
 		}
 		rule = r
 	} else {
@@ -21,7 +21,7 @@ func convertJsonbToRule(m map[string]interface{}) discount.Rule {
 			ItemSet: make(map[string]int),
 		}
 		for k, v := range m {
-			r.ItemSet[k] = v.(int)
+			r.ItemSet[k] = int(v.(float64))
 		}
 		rule = r
 	}

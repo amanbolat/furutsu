@@ -3,7 +3,7 @@ version: '3.8'
 services:
   furutsu_db:
     container_name: furutsu_db
-    image: postgres:11.2
+    image: postgres:12.4
     command: |
       postgres -c log_statement=all -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.max=10000 -c pg_stat_statements.track=all -c log_min_messages=DEBUG1
     ports:

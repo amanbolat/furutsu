@@ -1,12 +1,13 @@
 package discountsrv_test
 
 import (
+	"testing"
+
 	"github.com/amanbolat/furutsu/internal/cart"
 	"github.com/amanbolat/furutsu/internal/discount"
 	"github.com/amanbolat/furutsu/internal/product"
 	"github.com/amanbolat/furutsu/services/discountsrv"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestApplyDiscountsToCart(t *testing.T) {
@@ -14,45 +15,45 @@ func TestApplyDiscountsToCart(t *testing.T) {
 		Items: map[string]cart.Item{
 			"pear": {
 				Product: product.Product{
-					ID: "pear",
+					ID:    "pear",
 					Price: 100,
 				},
-				Amount:  10,
+				Amount: 10,
 			},
 			"banana": {
 				Product: product.Product{
-					ID: "banana",
+					ID:    "banana",
 					Price: 100,
 				},
-				Amount:  10,
+				Amount: 10,
 			},
 			"apple": {
 				Product: product.Product{
-					ID: "apple",
+					ID:    "apple",
 					Price: 100,
 				},
-				Amount:  10,
+				Amount: 10,
 			},
 			"orange": {
 				Product: product.Product{
-					ID: "orange",
+					ID:    "orange",
 					Price: 100,
 				},
-				Amount:  10,
+				Amount: 10,
 			},
 		},
 	}
 
 	d1 := []discount.Discount{
 		{
-			Rule:    discount.RuleItemsAll{
+			Rule: discount.RuleItemsAll{
 				ProductID: "apple",
 				Amount:    7,
 			},
 			Percent: 10,
 		},
 		{
-			Rule:    discount.RuleItemsSet{
+			Rule: discount.RuleItemsSet{
 				ItemSet: map[string]int{
 					"pear":   4,
 					"banana": 2,

@@ -2,11 +2,11 @@ package datastore_test
 
 import (
 	"context"
+	"testing"
+
 	"github.com/amanbolat/furutsu/datastore"
 	"github.com/amanbolat/furutsu/internal/user"
-	"github.com/jackc/pgx/v4"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestUserDataStore_CreateUser(t *testing.T) {
@@ -16,9 +16,9 @@ func TestUserDataStore_CreateUser(t *testing.T) {
 	ds := datastore.NewUserDataStore(conn)
 
 	u := user.User{
-		Username:  "some_user3",
-		Password:  "pass",
-		FullName:  "some suer",
+		Username: "some_user3",
+		Password: "pass",
+		FullName: "some suer",
 	}
 
 	createdUser, err := ds.CreateUser(u, context.Background())

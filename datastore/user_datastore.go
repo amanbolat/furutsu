@@ -3,6 +3,7 @@ package datastore
 import (
 	"context"
 	"fmt"
+
 	"github.com/amanbolat/furutsu/internal/user"
 	"github.com/georgysavva/scany/pgxscan"
 )

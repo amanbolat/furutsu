@@ -27,7 +27,7 @@ VALUES ('orange123', 'orange 10%', '2021-11-06 15:30:31.542000', '{
 }', 10);
 
 
--- User
+-- User and its cart
 INSERT INTO public.user (username, full_name, password)
 VALUES ('aman', 'Amanbolat', 'pass');
 WITH u AS (
@@ -40,5 +40,14 @@ INTO cart (user_id)
 SELECT id
 FROM u;
 
-
+-- User cart items
+WITH tmp AS (
+    SELECT cart.id as id
+    FROM cart
+    JOIN "user" u ON u.id = cart.user_id
+    WHERE u.username = 'aman'
+)
+INSERT INTO cart_item (cart_id, product_id, amount)
+SELECT id, 'e7f83943-7044-4406-9d32-9b229725f6d0', 20
+FROM tmp;
 

@@ -2,22 +2,23 @@ package discountsrv
 
 import (
 	"context"
+	"time"
+
 	"github.com/amanbolat/furutsu/datastore"
 	"github.com/amanbolat/furutsu/internal/cart"
 	"github.com/amanbolat/furutsu/internal/discount"
-	"github.com/jackc/pgx/v4"
 )
 
 type Service struct {
-	dbConn *pgx.Conn
+	repo datastore.Repository
 }
 
-func NewService(conn *pgx.Conn) *Service {
-	return &Service{dbConn: conn}
+func NewService(repo datastore.Repository) *Service {
+	return &Service{repo: repo}
 }
 
 func (s Service) ApplyDiscounts(c cart.Cart, ctx context.Context) (cart.Cart, error) {
-	ds := datastore.NewDiscountDataStore(s.dbConn)
+	ds := datastore.NewDiscountDataStore(s.repo)
 	discounts, err := ds.ListDiscounts(ctx)
 	if err != nil {
 		return cart.Cart{}, err
@@ -28,7 +29,9 @@ func (s Service) ApplyDiscounts(c cart.Cart, ctx context.Context) (cart.Cart, er
 			continue
 		}
 
-		if coupon.GetPercentage() == 0 {
+		// TODO: may be we should consider to put the check of expiration time
+		// into the database because of the different timezones
+		if coupon.GetPercentage() == 0 || coupon.GetExpireTime().Before(time.Now()) {
 			continue
 		}
 
@@ -60,7 +63,7 @@ func ApplyDiscountsToCart(c cart.Cart, discounts []discount.Discount) cart.Cart 
 
 	for _, d := range discounts {
 		discountSet, li := d.GetDiscountSetFor(leftItems)
-		if discountSet == nil{
+		if discountSet == nil {
 			continue
 		}
 		leftItems = li

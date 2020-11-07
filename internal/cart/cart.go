@@ -1,13 +1,15 @@
 package cart
 
 import (
+	"time"
+
 	"github.com/amanbolat/furutsu/internal/product"
 )
 
 type Item struct {
-	Id string
+	Id      string
 	Product product.Product
-	Amount int
+	Amount  int
 }
 
 // ItemSet is set of items in cart which could have discounts
@@ -23,17 +25,20 @@ type ItemsSet struct {
 type Coupon interface {
 	GetPercentage() int
 	GetName() string
+	GetExpireTime() time.Time
 }
 
 type Cart struct {
 	Id string
 	// Items is map items as of product_id:CartItem
-	Items map[string]Item
-	DiscountSets []ItemsSet
+	Items          map[string]Item
+	DiscountSets   []ItemsSet
 	NonDiscountSet ItemsSet
-	Coupons []Coupon
+	Coupons        []Coupon
 }
 
+// TotalSavings is a sum of money which could be saved
+// if discounts are applied
 func (c Cart) TotalSavings() int {
 	var total int
 	for _, set := range c.DiscountSets {
@@ -48,7 +53,9 @@ func (c Cart) TotalSavings() int {
 	return total
 }
 
-func (c Cart) TotalForPayment() int {
+// Total is a sum of money that has to be payed for
+// items in the cart WITHOUT discounts
+func (c Cart) Total() int {
 	var total int
 
 	for _, item := range c.Items {
@@ -56,8 +63,13 @@ func (c Cart) TotalForPayment() int {
 		total += toPay
 	}
 
-	total -= c.TotalSavings()
 	return total
+}
+
+// TotalForPayment is a sum of money that
+// has to be payed. Discounts are applied
+func (c Cart) TotalForPayment() int {
+	return c.Total() - c.TotalSavings()
 }
 
 func (c *Cart) SetProductAmount(p product.Product, amount int) {
@@ -81,4 +93,3 @@ func (c *Cart) SetProductAmount(p product.Product, amount int) {
 
 	c.Items[p.ID] = il
 }
-

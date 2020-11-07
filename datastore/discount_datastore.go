@@ -2,9 +2,10 @@ package datastore
 
 import (
 	"context"
+	"time"
+
 	"github.com/amanbolat/furutsu/internal/discount"
 	"github.com/georgysavva/scany/pgxscan"
-	"time"
 )
 
 type DbDiscount struct {
@@ -17,16 +18,16 @@ type DbDiscount struct {
 }
 
 type DiscountDataStore struct {
-	querier pgxscan.Querier
+	repo Repository
 }
 
-func NewDiscountDataStore(q pgxscan.Querier) *DiscountDataStore {
-	return &DiscountDataStore{querier: q}
+func NewDiscountDataStore(repo Repository) *DiscountDataStore {
+	return &DiscountDataStore{repo: repo}
 }
 
 func (s DiscountDataStore) ListDiscounts(ctx context.Context) ([]discount.Discount, error) {
 	var arr []DbDiscount
-	err := pgxscan.Select(ctx, s.querier, &arr, `select * from discount`)
+	err := pgxscan.Select(ctx, s.repo, &arr, `select * from discount`)
 	if err != nil {
 		return nil, err
 	}

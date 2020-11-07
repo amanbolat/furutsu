@@ -2,7 +2,6 @@ package datastore
 
 import (
 	"context"
-	"github.com/jackc/pgx/v4"
 )
 
 type Repository interface {
@@ -11,8 +10,10 @@ type Repository interface {
 }
 
 type RepoTx interface {
+	Begin(ctx context.Context) (RepoTx, error)
 	Commit(ctx context.Context) error
 	Rollback(ctx context.Context) error
+	Query(ctx context.Context, sqlQuery string, args ...interface{}) (pgx.Rows, error)
 }
 
 type PgxTx struct {
@@ -32,7 +33,7 @@ func (p PgxTx) Rollback(ctx context.Context) error {
 }
 
 func (p PgxTx) Query(ctx context.Context, sqlQuery string, args ...interface{}) (pgx.Rows, error) {
-	return p.tx.Query(ctx, sqlQuery, args)
+	return p.tx.Query(ctx, sqlQuery, args...)
 }
 
 func (p PgxTx) Begin(ctx context.Context) (RepoTx, error) {
@@ -41,7 +42,7 @@ func (p PgxTx) Begin(ctx context.Context) (RepoTx, error) {
 		return nil, err
 	}
 
-	return PgxTx{tx: tx}, nil
+	return &PgxTx{tx: tx}, nil
 }
 
 type PgxConn struct {
@@ -53,11 +54,10 @@ func NewPgxConn(c *pgx.Conn) Repository {
 }
 
 func (p PgxConn) Query(ctx context.Context, sqlQuery string, args ...interface{}) (pgx.Rows, error) {
-	return p.conn.Query(ctx, sqlQuery, args)
+	return p.conn.Query(ctx, sqlQuery, args...)
 }
 
 func (p PgxConn) Begin(ctx context.Context) (RepoTx, error) {
-	return p.conn.Begin(ctx)
+	tx, err := p.conn.Begin(ctx)
+	return &PgxTx{tx: tx}, err
 }
-
-

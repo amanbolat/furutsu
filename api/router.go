@@ -3,21 +3,29 @@ package api
 import (
 	"context"
 	"fmt"
-	"github.com/amanbolat/furutsu/internal/user"
-	"github.com/amanbolat/furutsu/services/authsrv"
-	"github.com/amanbolat/furutsu/services/productsrv"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"net/http"
 	"os"
+
+	"github.com/amanbolat/furutsu/internal/user"
+	"github.com/amanbolat/furutsu/services/authsrv"
+	"github.com/amanbolat/furutsu/services/cartsrv"
+	"github.com/amanbolat/furutsu/services/productsrv"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 type Router struct {
 	e *echo.Echo
 }
 
-func NewRouter(productSrv *productsrv.Service, authSrv *authsrv.Service) *Router {
+type RouterConfig struct {
+	ProductService *productsrv.Service
+	AuthService    *authsrv.Service
+	CartService    *cartsrv.Service
+}
+
+func NewRouter(cfg RouterConfig) *Router {
 	e := echo.New()
 
 	e.HTTPErrorHandler = func(err error, c echo.Context) {
@@ -37,8 +45,8 @@ func NewRouter(productSrv *productsrv.Service, authSrv *authsrv.Service) *Router
 		AllowCredentials: true,
 	}))
 
-	e.GET("/product", ListProducts(productSrv))
-	e.GET("/product/{id}", GetProductById(productSrv))
+	e.GET("/product", ListProducts(cfg))
+	e.GET("/product/{id}", GetProductById(cfg))
 	e.POST("/auth/login", Login(authSrv))
 	e.POST("/auth/register", Register(authSrv))
 	authGroup := e.Group("")
@@ -50,8 +58,8 @@ func NewRouter(productSrv *productsrv.Service, authSrv *authsrv.Service) *Router
 			claims := c.Get("jwt_token").(*jwt.Token).Claims.(*authsrv.Claims)
 			c.Set("user", claims)
 		},
-		SigningKey:              authsrv.JwtSecret,
-		Claims:                  &authsrv.Claims{},
+		SigningKey: authsrv.JwtSecret,
+		Claims:     &authsrv.Claims{},
 		ContextKey: "jwt_token",
 	}))
 	authGroup.GET("/cart", GetCart())
@@ -63,11 +71,16 @@ type JSONResponse struct {
 	Data interface{} `json:"data"`
 }
 
-func GetCart() echo.HandlerFunc {
+func GetCart(srv *cartsrv.Service) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		claims := c.Get("user").(*authsrv.Claims)
-		fmt.Printf("claims: %v\n", claims)
-		return c.JSON(http.StatusOK, "CART")
+
+		userCart, err := srv.GetCart(claims.UserId, context.Background())
+		if err != nil {
+			return echo.ErrInternalServerError
+		}
+
+		return c.JSON(http.StatusOK, JSONResponse{Data: userCart})
 	}
 }
 

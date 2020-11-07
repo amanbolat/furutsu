@@ -121,6 +121,7 @@ CREATE TABLE coupon
     code             TEXT UNIQUE NOT NULL CHECK ( length(code) > 5 ),
     name             TEXT        NOT NULL CHECK ( length(name) > 0 AND length(name) < 1024 ),
     cart_id          UUID REFERENCES cart (id),
+    user_id          UUID REFERENCES "user" (id),
     expire_at        TIMESTAMPTZ NOT NULL,
     rule             JSONB       NOT NULL,
     discount_percent INTEGER     NOT NULL CHECK ( discount_percent > 0 AND discount_percent < 100),
@@ -131,27 +132,27 @@ CREATE TABLE coupon
 -- Order table
 CREATE TABLE "order"
 (
-    id         UUID PRIMARY KEY     DEFAULT uuid_generate_v4(),
-    user_id    UUID        NOT NULL REFERENCES "user" (id),
-    status     TEXT        NOT NULL CHECK ( status = ANY ('{pending, paid}'::TEXT[])),
-    total      INTEGER     NOT NULL,
-    savings    INTEGER     NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    id                UUID PRIMARY KEY     DEFAULT uuid_generate_v4(),
+    user_id           UUID        NOT NULL REFERENCES "user" (id),
+    status            TEXT        NOT NULL CHECK ( status = ANY ('{pending, paid}'::TEXT[])),
+    total             INTEGER     NOT NULL,
+    savings           INTEGER     NOT NULL,
+    total_for_payment INTEGER     NOT NULL,
+    created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- Order table
 CREATE TABLE order_item
 (
-    id         UUID PRIMARY KEY     DEFAULT uuid_generate_v4(),
-    name       TEXT        NOT NULL,
-    order_id   UUID        NOT NULL REFERENCES "order" (id),
-    status     TEXT        NOT NULL,
-    price      INTEGER     NOT NULL,
-    amount     INTEGER     NOT NULL,
-    discount   INTEGER     NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    id                  UUID PRIMARY KEY     DEFAULT uuid_generate_v4(),
+    product_name        TEXT        NOT NULL,
+    product_description TEXT,
+    order_id            UUID        NOT NULL REFERENCES "order" (id),
+    price               INTEGER     NOT NULL,
+    amount              INTEGER     NOT NULL,
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- Payment table

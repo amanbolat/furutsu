@@ -20,3 +20,7 @@ func (c Coupon) GetPercentage() int {
 func (c Coupon) GetName() string {
 	return c.Name
 }
+
+func (c Coupon) GetExpireTime() time.Time {
+	return c.Expire
+}

@@ -4,17 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/amanbolat/furutsu/datastore"
 	"github.com/amanbolat/furutsu/internal/user"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/jackc/pgx/v4"
-	"time"
 )
 
 var JwtSecret = []byte("pan4HAPPENED8archaic2prolix")
 
 type Claims struct {
-	UserId string
+	UserId   string
 	Username string
 	jwt.StandardClaims
 }
@@ -38,25 +38,25 @@ func (s Service) Login(creds Credentials, ctx context.Context) (string, error) {
 	if err != nil {
 		return "", errors.New(fmt.Sprintf("wrong credentials: %v", err))
 	}
-	
+
 	if u.Password != creds.Password {
 		return "", errors.New("wrong credentials")
 	}
-	
+
 	claims := &Claims{
-		UserId:         u.Id,
-		Username:       u.Username,
+		UserId:   u.Id,
+		Username: u.Username,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour).Unix(),
 		},
 	}
-	
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenStr, err := token.SignedString(JwtSecret)
 	if err != nil {
 		return "", errors.New(fmt.Sprintf("internal error: %v", err))
 	}
-	
+
 	return tokenStr, nil
 }
 

@@ -1,17 +1,18 @@
 package user
 
 import (
-	validation "github.com/go-ozzo/ozzo-validation"
 	"time"
+
+	validation "github.com/go-ozzo/ozzo-validation"
 )
 
 type User struct {
-	Id       string `json:"id"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-	FullName string `json:"full_name"`
-	CreatedAt   time.Time `sql:"created_at"`
-	UpdatedAt   time.Time `sql:"updated_at"`
+	Id        string    `json:"id"`
+	Username  string    `json:"username"`
+	Password  string    `json:"password"`
+	FullName  string    `json:"full_name"`
+	CreatedAt time.Time `sql:"created_at"`
+	UpdatedAt time.Time `sql:"updated_at"`
 }
 
 func (u User) Validate() error {
