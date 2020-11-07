@@ -30,6 +30,7 @@ type Coupon interface {
 
 type Cart struct {
 	Id string
+	UserId string
 	// Items is map items as of product_id:CartItem
 	Items          map[string]Item
 	DiscountSets   []ItemsSet

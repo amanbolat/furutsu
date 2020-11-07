@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/amanbolat/furutsu/internal/cart"
-	"github.com/amanbolat/furutsu/internal/discount"
 	"github.com/amanbolat/furutsu/internal/product"
 	"github.com/georgysavva/scany/pgxscan"
 )
@@ -52,19 +51,8 @@ type DbCart struct {
 func (dc DbCart) ToCart() cart.Cart {
 	return cart.Cart{
 		Id: dc.Id,
+		UserId: dc.UserId,
 	}
-}
-
-type DbCoupon struct {
-	ID              string
-	Code            string
-	Name            string
-	CartId          string
-	Rule            map[string]interface{}
-	DiscountPercent int
-	ExpireAt        time.Time
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
 }
 
 func NewCartDataStore(q pgxscan.Querier) *CartDataStore {
@@ -72,14 +60,14 @@ func NewCartDataStore(q pgxscan.Querier) *CartDataStore {
 }
 
 func (s CartDataStore) CreateCart(userId string, ctx context.Context) (cart.Cart, error) {
-	rows, err := s.querier.Query(ctx, `INSERT INTO cart (user_id) VALUES ($1)`, userId)
+	rows, err := s.querier.Query(ctx, `INSERT INTO cart (user_id) VALUES ($1) RETURNING *`, userId)
 	if err != nil {
 		return cart.Cart{}, err
 	}
 	defer rows.Close()
 
 	var dc DbCart
-	err = pgxscan.ScanRow(&dc, rows)
+	err = pgxscan.ScanOne(&dc, rows)
 	if err != nil {
 		return cart.Cart{}, err
 	}
@@ -120,27 +108,16 @@ WHERE c.user_id = $1;`, userid)
 		return cart.Cart{}, err
 	}
 
-	c := cart.Cart{
-		Id:      dbCart.Id,
-		Items:   make(map[string]cart.Item, len(dbCartItems)),
-		Coupons: make([]cart.Coupon, len(coupons)),
-	}
+	c := dbCart.ToCart()
+	c.Items = make(map[string]cart.Item, len(dbCartItems))
+	c.Coupons = make([]cart.Coupon, len(coupons))
 
 	for _, item := range dbCartItems {
 		c.Items[item.ProductId] = item.ToCartItem()
 	}
 
 	for i, coupon := range coupons {
-		rule := convertJsonbToRule(coupon.Rule)
-
-		c.Coupons[i] = discount.Coupon{
-			ID:      coupon.ID,
-			Code:    coupon.Code,
-			Name:    coupon.Name,
-			Rule:    rule,
-			Percent: coupon.DiscountPercent,
-			Expire:  coupon.ExpireAt,
-		}
+		c.Coupons[i] = coupon.ToCoupon()
 	}
 
 	return c, nil
@@ -178,17 +155,13 @@ func (s CartDataStore) GetCartItem(cartId, productId string, ctx context.Context
 
 func (s CartDataStore) DeleteCartItem(cartId, productId string, ctx context.Context) error {
 	rows, err := s.querier.Query(ctx,
-		`DELETE FROM cart_item WHERE cart_id = $1 AND product_id = $2 RETURNING id`,
+		`DELETE FROM cart_item WHERE cart_id = $1 AND product_id = $2`,
 		cartId,
 		productId)
 	if err != nil {
 		return err
 	}
 	defer rows.Close()
-
-	if len(rows.RawValues()) == 0 {
-		return ErrNoRecords
-	}
 
 	return nil
 }
@@ -219,11 +192,9 @@ UPDATE coupon
 SET cart_id = utable.id
 FROM utable
 WHERE coupon.id = $2
-  AND coupon.expire_at > current_timestamp
-  AND coupon.user_id = $3`,
+  AND coupon.expire_at > current_timestamp`,
 		userId,
 		couponId,
-		userId,
 	)
 	if err != nil {
 		return err

@@ -1,12 +1,16 @@
 package discount
 
-import "github.com/amanbolat/furutsu/internal/cart"
+import (
+	"encoding/json"
+	"github.com/amanbolat/furutsu/internal/cart"
+)
 
 type Rule interface {
 	// Check checks if the given items satisfy the rule.
 	// If true it returns set of product_ids and discount applied
 	// also the set items left without discount
 	Check(map[string]cart.Item) (discountSet map[string]int, itemsLeft map[string]cart.Item)
+	ToJSON() []byte
 }
 
 type RuleType string
@@ -19,6 +23,13 @@ const (
 type RuleItemsAll struct {
 	ProductID string
 	Amount    int
+}
+
+func (r RuleItemsAll) ToJSON() []byte {
+	m := make(map[string]int)
+	m[r.ProductID] = r.Amount
+	b, _ := json.Marshal(m)
+	return b
 }
 
 func (r RuleItemsAll) Check(items map[string]cart.Item) (discountSet map[string]int, itemsLeft map[string]cart.Item) {
@@ -37,6 +48,12 @@ func (r RuleItemsAll) Check(items map[string]cart.Item) (discountSet map[string]
 
 type RuleItemsSet struct {
 	ItemSet map[string]int
+}
+
+
+func (r RuleItemsSet) ToJSON() []byte {
+	b, _ := json.Marshal(r.ItemSet)
+	return b
 }
 
 func (r RuleItemsSet) Check(items map[string]cart.Item) (discountSet map[string]int, itemsLeft map[string]cart.Item) {

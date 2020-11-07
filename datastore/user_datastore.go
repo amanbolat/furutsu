@@ -2,8 +2,6 @@ package datastore
 
 import (
 	"context"
-	"fmt"
-
 	"github.com/amanbolat/furutsu/internal/user"
 	"github.com/georgysavva/scany/pgxscan"
 )
@@ -38,7 +36,6 @@ func (s UserDataStore) CreateUser(u user.User, ctx context.Context) (user.User, 
 	if err != nil {
 		return user.User{}, err
 	}
-	fmt.Println("CREATED USER", createdUser)
 
 	return createdUser, nil
 }

@@ -82,7 +82,7 @@ func (s Service) SetItemAmount(cartId, productId, userId string, amount int, ctx
 		// Delete item if amount argument is less than 1
 	} else if amount < 1 {
 		err = ds.DeleteCartItem(cartId, productId, ctx)
-		if err != nil && !errors.Is(err, datastore.ErrNoRecords) {
+		if err != nil {
 			_ = tx.Rollback(ctx)
 			return cart.Cart{}, err
 		}

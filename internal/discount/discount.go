@@ -5,6 +5,7 @@ import (
 )
 
 type Discount struct {
+	Name string
 	Rule    Rule
 	Percent int
 }
