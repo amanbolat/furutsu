@@ -11,7 +11,7 @@ import (
 	"github.com/amanbolat/furutsu/services/cartsrv"
 	"github.com/amanbolat/furutsu/services/productsrv"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
@@ -45,10 +45,10 @@ func NewRouter(cfg RouterConfig) *Router {
 		AllowCredentials: true,
 	}))
 
-	e.GET("/product", ListProducts(cfg))
-	e.GET("/product/{id}", GetProductById(cfg))
-	e.POST("/auth/login", Login(authSrv))
-	e.POST("/auth/register", Register(authSrv))
+	e.GET("/product", ListProducts(cfg.ProductService))
+	e.GET("/product/{id}", GetProductById(cfg.ProductService))
+	e.POST("/auth/login", Login(cfg.AuthService))
+	e.POST("/auth/register", Register(cfg.AuthService))
 	authGroup := e.Group("")
 	authGroup.Use(middleware.JWTWithConfig(middleware.JWTConfig{
 		ErrorHandler: func(err error) error {
@@ -62,7 +62,7 @@ func NewRouter(cfg RouterConfig) *Router {
 		Claims:     &authsrv.Claims{},
 		ContextKey: "jwt_token",
 	}))
-	authGroup.GET("/cart", GetCart())
+	authGroup.GET("/cart", GetCart(cfg.CartService))
 
 	return &Router{e: e}
 }

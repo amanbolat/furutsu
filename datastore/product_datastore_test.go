@@ -2,6 +2,7 @@ package datastore_test
 
 import (
 	"context"
+	"github.com/jackc/pgx/v4"
 	"testing"
 
 	"github.com/amanbolat/furutsu/datastore"

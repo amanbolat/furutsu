@@ -3,7 +3,6 @@ module github.com/amanbolat/furutsu
 go 1.15
 
 require (
-	github.com/davecgh/go-spew v1.1.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/georgysavva/scany v0.2.7
 	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible

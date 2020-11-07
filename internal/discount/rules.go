@@ -46,22 +46,37 @@ func (r RuleItemsSet) Check(items map[string]cart.Item) (discountSet map[string]
 		oldItems[k] = v
 	}
 
-recLoop:
-	for {
-		for productId, amountNeeded := range r.ItemSet {
-			item, ok := items[productId]
-			if !ok {
-				break recLoop
-			}
+	var maxNeedProduct string
+	var maxNeedAmount int
+	for p, a := range r.ItemSet {
+		if a > maxNeedAmount {
+			maxNeedAmount = a
+			maxNeedProduct = p
+		}
+	}
 
-			if item.Amount < amountNeeded {
-				break recLoop
-			}
+	item, ok := items[maxNeedProduct]
+	if !ok {
+		return nil, oldItems
+	}
 
+	maxSets := item.Amount / maxNeedAmount
+
+	for productId, amountNeeded := range r.ItemSet {
+		item, ok := items[productId]
+		if !ok {
+			break
+		}
+
+		var setsAdded int
+		leftAmount := item.Amount
+		for leftAmount >= amountNeeded && setsAdded < maxSets {
+			leftAmount -= amountNeeded
+			setsAdded += 1
 			discSet[productId] += amountNeeded
 			items[productId] = cart.Item{
 				Product: item.Product,
-				Amount:  item.Amount - amountNeeded,
+				Amount:  leftAmount,
 			}
 		}
 	}

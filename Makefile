@@ -3,8 +3,8 @@ export
 
 .PHONY: fmt
 fmt:
-	goimports -l -w .
+	gofmt -l -w .
 
 .PHONY: lint
 lint:
-	go vet
+	go vet ./...

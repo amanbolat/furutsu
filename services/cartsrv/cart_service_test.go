@@ -3,6 +3,7 @@ package cartsrv_test
 import (
 	"context"
 	"fmt"
+	"github.com/jackc/pgx/v4"
 	"testing"
 
 	"github.com/amanbolat/furutsu/datastore"

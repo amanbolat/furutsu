@@ -2,6 +2,7 @@ package datastore
 
 import (
 	"context"
+	"github.com/jackc/pgx/v4"
 )
 
 type Repository interface {

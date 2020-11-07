@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"github.com/jackc/pgx/v4"
 	"os"
 	"os/signal"
 	"time"
