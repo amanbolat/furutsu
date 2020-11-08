@@ -15,9 +15,10 @@ import (
 var JwtSecret = []byte("pan4HAPPENED8archaic2prolix")
 
 type Claims struct {
-	UserId   string
-	Username string
-	jwt.StandardClaims
+	Id                 string `json:"user_id"`
+	Username           string `json:"username"`
+	FullName           string `json:"full_name"`
+	jwt.StandardClaims `json:""`
 }
 
 type Credentials struct {
@@ -45,8 +46,9 @@ func (s Service) Login(creds Credentials, ctx context.Context) (string, error) {
 	}
 
 	claims := &Claims{
-		UserId:   u.Id,
+		Id:       u.Id,
 		Username: u.Username,
+		FullName: u.FullName,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour).Unix(),
 		},

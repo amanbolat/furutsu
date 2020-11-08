@@ -49,6 +49,7 @@ func NewRouter(cfg RouterConfig) *Router {
 	e.GET("/product/{id}", GetProductById(cfg.ProductService))
 	e.POST("/auth/login", Login(cfg.AuthService))
 	e.POST("/auth/register", Register(cfg.AuthService))
+
 	authGroup := e.Group("")
 	authGroup.Use(middleware.JWTWithConfig(middleware.JWTConfig{
 		ErrorHandler: func(err error) error {
@@ -63,6 +64,13 @@ func NewRouter(cfg RouterConfig) *Router {
 		ContextKey: "jwt_token",
 	}))
 	authGroup.GET("/cart", GetCart(cfg.CartService))
+	authGroup.PUT("/cart/product", nil)
+	authGroup.POST("/cart/product", nil)
+	authGroup.PUT("/order", nil)
+	authGroup.GET("/order", nil)
+	authGroup.GET("/order/{id}", nil)
+	authGroup.POST("/payment/{order_id}", nil)
+	authGroup.GET("/coupon", nil)
 
 	return &Router{e: e}
 }
@@ -75,7 +83,7 @@ func GetCart(srv *cartsrv.Service) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		claims := c.Get("user").(*authsrv.Claims)
 
-		userCart, err := srv.GetCart(claims.UserId, context.Background())
+		userCart, err := srv.GetCart(claims.Id, context.Background())
 		if err != nil {
 			return echo.ErrInternalServerError
 		}
