@@ -8,7 +8,7 @@ import (
 	"github.com/amanbolat/furutsu/internal/discount"
 	"github.com/amanbolat/furutsu/internal/product"
 	"github.com/amanbolat/furutsu/internal/user"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -19,30 +19,30 @@ import (
 )
 
 var (
-	conn *pgx.Conn
+	conn        *pgxpool.Pool
 	allProducts []product.Product
 
-	appleId string
-	pearId string
+	appleId  string
+	pearId   string
 	bananaId string
 	orangeId string
 
 	testUser = user.User{
-		Username:  "test_user",
-		Password:  "password",
-		FullName:  "John Doe",
+		Username: "test_user",
+		Password: "password",
+		FullName: "John Doe",
 	}
 
 	orangeCoupon discount.Coupon
 )
 
-func TestMain(m *testing.M)  {
+func TestMain(m *testing.M) {
 	fmt.Println(os.Getenv("TEST_DB_URL"))
 	retryCount := 30
 
 	for {
 		var err error
-		conn, err = pgx.Connect(context.Background(), os.Getenv("TEST_DB_URL"))
+		conn, err = pgxpool.Connect(context.Background(), os.Getenv("TEST_DB_URL"))
 		if err != nil {
 			if retryCount == 0 {
 				logrus.WithError(err).Fatal("no more retries")
@@ -69,7 +69,7 @@ func TestMain(m *testing.M)  {
 	m.Run()
 }
 
-func TestCreateAndListProducts(t *testing.T)  {
+func TestCreateAndListProducts(t *testing.T) {
 	pds := datastore.NewProductDataStore(datastore.NewPgxConn(conn))
 	list := []product.Product{
 		{
@@ -95,7 +95,7 @@ func TestCreateAndListProducts(t *testing.T)  {
 	}
 
 	for _, p := range list {
-		_, err:= pds.CreateProduct(p, context.Background())
+		_, err := pds.CreateProduct(p, context.Background())
 		require.NoError(t, err)
 	}
 
@@ -106,7 +106,7 @@ func TestCreateAndListProducts(t *testing.T)  {
 	assert.Len(t, allProducts, len(list))
 }
 
-func TestFindProductsById(t *testing.T)  {
+func TestFindProductsById(t *testing.T) {
 	pds := datastore.NewProductDataStore(datastore.NewPgxConn(conn))
 	for _, p := range allProducts {
 		found, err := pds.GetProductById(p.ID, context.Background())
@@ -127,8 +127,6 @@ func TestFindProductsById(t *testing.T)  {
 func TestCreateUser(t *testing.T) {
 	uds := datastore.NewUserDataStore(datastore.NewPgxConn(conn))
 
-
-
 	created, err := uds.CreateUser(testUser, context.Background())
 	require.NoError(t, err)
 	assert.Equal(t, testUser.Username, created.Username)
@@ -147,9 +145,9 @@ func TestCreateCoupon(t *testing.T) {
 	dds := datastore.NewDiscountDataStore(datastore.NewPgxConn(conn))
 
 	c := discount.Coupon{
-		Code:    "cup123",
-		Name:    "10 oranges discount 30%",
-		Rule:    discount.RuleItemsAll{
+		Code: "cup123",
+		Name: "10 oranges discount 30%",
+		Rule: discount.RuleItemsAll{
 			ProductID: orangeId,
 			Amount:    10,
 		},
@@ -171,8 +169,8 @@ func TestCreateDiscounts(t *testing.T) {
 	dds := datastore.NewDiscountDataStore(datastore.NewPgxConn(conn))
 
 	d1 := discount.Discount{
-		Name:    "7 apples 10%",
-		Rule:    discount.RuleItemsAll{
+		Name: "7 apples 10%",
+		Rule: discount.RuleItemsAll{
 			ProductID: appleId,
 			Amount:    7,
 		},
@@ -180,8 +178,8 @@ func TestCreateDiscounts(t *testing.T) {
 	}
 
 	d2 := discount.Discount{
-		Name:    "4 pears, 2 bananas - 10%",
-		Rule:    discount.RuleItemsSet{
+		Name: "4 pears, 2 bananas - 10%",
+		Rule: discount.RuleItemsSet{
 			ItemSet: map[string]int{pearId: 4, bananaId: 2},
 		},
 		Percent: 30,
@@ -213,14 +211,14 @@ func TestCreateCart(t *testing.T) {
 	assert.Empty(t, created.NonDiscountSet)
 }
 
-func TestGetCartForUser(t *testing.T)  {
+func TestGetCartForUser(t *testing.T) {
 	cds := datastore.NewCartDataStore(datastore.NewPgxConn(conn))
 	found, err := cds.GetCartForUser(testUser.Id, context.Background())
 	require.NoError(t, err)
 	require.NotEqual(t, cart.Cart{}, found)
 }
 
-func TestCreateAndGetCartItem(t *testing.T)  {
+func TestCreateAndGetCartItem(t *testing.T) {
 	cds := datastore.NewCartDataStore(datastore.NewPgxConn(conn))
 	userCart, err := cds.GetCartForUser(testUser.Id, context.Background())
 	require.NoError(t, err)
@@ -239,7 +237,7 @@ func TestCreateAndGetCartItem(t *testing.T)  {
 	assert.Len(t, updatedCart.Items, 4)
 }
 
-func TestUpdateCartItems(t *testing.T)  {
+func TestUpdateCartItems(t *testing.T) {
 	cds := datastore.NewCartDataStore(datastore.NewPgxConn(conn))
 	userCart, err := cds.GetCartForUser(testUser.Id, context.Background())
 	require.NoError(t, err)
@@ -254,7 +252,7 @@ func TestUpdateCartItems(t *testing.T)  {
 	assert.Len(t, updatedCart.Items, 3)
 }
 
-func TestCartAttachDetachCoupon(t *testing.T)  {
+func TestCartAttachDetachCoupon(t *testing.T) {
 	cds := datastore.NewCartDataStore(datastore.NewPgxConn(conn))
 	err := cds.AttachCoupon(testUser.Id, orangeCoupon.ID, context.Background())
 	require.NoError(t, err)

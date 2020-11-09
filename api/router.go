@@ -169,18 +169,6 @@ func ListProducts(srv *productsrv.Service) echo.HandlerFunc {
 	}
 }
 
-func GetProductById(srv *productsrv.Service) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		id := c.Param("id")
-		product, err := srv.GetProductById(id, context.Background())
-		if err != nil {
-			return err
-		}
-
-		return c.JSON(http.StatusOK, JSONResponse{Data: product})
-	}
-}
-
 func Login(srv *authsrv.Service) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		creds := authsrv.Credentials{}
