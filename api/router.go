@@ -151,7 +151,7 @@ func GetCart(srv *cartsrv.Service) echo.HandlerFunc {
 
 		userCart, err := srv.GetCart(claims.Id, context.Background())
 		if err != nil {
-			return echo.ErrInternalServerError
+			return err
 		}
 
 		return c.JSON(http.StatusOK, JSONResponse{Data: userCart})

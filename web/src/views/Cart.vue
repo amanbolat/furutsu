@@ -84,11 +84,10 @@
       v-col(cols="12" md="5").d-flex.align-center
         v-text-field.mr-4(v-model="couponCode" label="Coupon code" outlined dense hide-details)
         v-btn(dark color="orange" @click="applyCoupon") Apply
-    v-row(v-if="cart.coupons && cart.coupons.length > 0")
+    v-row(v-if="cart.coupons")
       v-col
         h3 Coupons
         v-data-table.mt-4(
-          v-if="cart.coupons"
           :headers="couponsTableHeaders"
           :items="cart.coupons"
           class="elevation-1"
@@ -171,6 +170,7 @@ export default class Cart extends Vue {
 
   private applyCoupon() {
     api.post(`/cart/coupon`, {code: this.couponCode}).then((response) => {
+      this.couponCode = ''
       this.handleGetCartResponse(response)
     }).catch((err) => {
       eventBus.$emit('app_error', err)

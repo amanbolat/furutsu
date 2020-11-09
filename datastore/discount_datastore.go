@@ -28,12 +28,13 @@ func (d DbDiscount) ToDiscount() discount.Discount {
 }
 
 type DbCoupon struct {
-	ID              string
-	UserId          sql.NullString
-	Code            string
-	Name            string
-	CartId          sql.NullString
-	Rule            map[string]interface{}
+	ID      string
+	Code    string
+	Name    string
+	CartId  sql.NullString
+	OrderId sql.NullString
+	Rule    map[string]interface {
+	}
 	DiscountPercent int
 	ExpireAt        time.Time
 	CreatedAt       time.Time

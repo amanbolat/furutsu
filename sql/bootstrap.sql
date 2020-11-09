@@ -122,6 +122,7 @@ CREATE TABLE coupon
     name             TEXT        NOT NULL CHECK ( length(name) > 0 AND length(name) < 1024 ),
     cart_id          UUID REFERENCES cart (id),
     user_id          UUID REFERENCES "user" (id),
+    order_id         UUID REFERENCES "order" (id),
     expire_at        TIMESTAMPTZ NOT NULL,
     rule             JSONB       NOT NULL,
     discount_percent INTEGER     NOT NULL CHECK ( discount_percent > 0 AND discount_percent < 100),

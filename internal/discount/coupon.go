@@ -8,6 +8,7 @@ type Coupon struct {
 	ID      string    `json:"id"`
 	Code    string    `json:"code"`
 	CartId  string    `json:"cart_id"`
+	OrderId string    `json:"order_id"`
 	Name    string    `json:"name"`
 	Rule    Rule      `json:"rule"`
 	Percent int       `json:"percent"`
@@ -31,5 +32,5 @@ func (c Coupon) IsExpired() bool {
 }
 
 func (c Coupon) IsUsed() bool {
-	return c.CartId != ""
+	return c.CartId != "" || c.OrderId != ""
 }

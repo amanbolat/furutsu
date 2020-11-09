@@ -151,7 +151,7 @@ func (s Service) ApplyCoupon(userId, couponCode string, ctx context.Context) (ca
 		return cart.Cart{}, nil
 	}
 
-	c, err = s.GetCart(userId, ctx)
+	c, err = s.WithTx(tx).GetCart(userId, ctx)
 	if err != nil {
 		_ = tx.Rollback(ctx)
 		return cart.Cart{}, nil
