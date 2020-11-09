@@ -127,9 +127,9 @@ func (s Service) ApplyCoupon(userId, couponCode string, ctx context.Context) (ca
 		_ = tx.Rollback(ctx)
 		return cart.Cart{}, apperr.With(err, "couldn't find the coupon", "")
 	}
-	if foundCoupon.IsExpired() {
+	if foundCoupon.IsExpired() || foundCoupon.IsUsed() {
 		_ = tx.Rollback(ctx)
-		return cart.Cart{}, apperr.New("coupon has expired", "")
+		return cart.Cart{}, apperr.New("coupon is not valid anymore", "")
 	}
 
 	ds := datastore.NewCartDataStore(tx)
@@ -165,7 +165,7 @@ func (s Service) ApplyCoupon(userId, couponCode string, ctx context.Context) (ca
 	return c, nil
 }
 
-func (s Service) RemoveCoupon(userId, couponCode string, ctx context.Context) (cart.Cart, error) {
+func (s Service) DetachCoupon(userId, couponCode string, ctx context.Context) (cart.Cart, error) {
 	tx, err := s.repo.Begin(ctx)
 	if err != nil {
 		return cart.Cart{}, err

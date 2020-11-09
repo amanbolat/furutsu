@@ -19,8 +19,9 @@ type Item struct {
 type ItemsSet struct {
 	// Set represent set of multiple items and their amounts
 	// which share one discount
-	Set      map[string]int `json:"set"`
-	Discount int            `json:"discount"`
+	Set             map[string]int `json:"set"`
+	DiscountPercent int            `json:"discount_percent"`
+	DiscountName    string         `json:"discount_name"`
 }
 
 type Coupon interface {
@@ -28,6 +29,7 @@ type Coupon interface {
 	GetName() string
 	GetExpireTime() time.Time
 	IsExpired() bool
+	IsUsed() bool
 }
 
 type Alias Cart
@@ -42,24 +44,26 @@ type jsonCart struct {
 }
 
 type jsonItem struct {
-	Id       string          `json:"id"`
-	Product  product.Product `json:"product"`
-	Amount   int             `json:"amount"`
-	Discount int             `json:"discount"`
+	Id              string          `json:"id"`
+	Product         product.Product `json:"product"`
+	Amount          int             `json:"amount"`
+	DiscountPercent int             `json:"discount_percent"`
+	DiscountName    string          `json:"discount_name"`
 }
 
 func (c Cart) MarshalJSON() ([]byte, error) {
 	var discountSets []interface{}
 
 	for _, set := range c.DiscountSets {
-		d := set.Discount
+		d := set.DiscountPercent
 		var setItems []jsonItem
 		for pId, amount := range set.Set {
 			item := jsonItem{
-				Id:       c.Items[pId].Id,
-				Product:  c.Items[pId].Product,
-				Amount:   amount,
-				Discount: d,
+				Id:              c.Items[pId].Id,
+				Product:         c.Items[pId].Product,
+				Amount:          amount,
+				DiscountPercent: d,
+				DiscountName:    set.DiscountName,
 			}
 			setItems = append(setItems, item)
 		}
@@ -73,10 +77,9 @@ func (c Cart) MarshalJSON() ([]byte, error) {
 			continue
 		}
 		item := jsonItem{
-			Id:       c.Items[pId].Id,
-			Product:  c.Items[pId].Product,
-			Amount:   amount,
-			Discount: 0,
+			Id:      c.Items[pId].Id,
+			Product: c.Items[pId].Product,
+			Amount:  amount,
 		}
 		nonDiscountSet = append(nonDiscountSet, item)
 	}
@@ -96,7 +99,8 @@ func (c Cart) MarshalJSON() ([]byte, error) {
 type Cart struct {
 	Id     string `json:"id"`
 	UserId string `json:"user_id"`
-	// Items is map items as of product_id:CartItem
+	// Items is a map of items
+	// <product_id:CartItem>
 	Items          map[string]Item `json:"items"`
 	DiscountSets   []ItemsSet      `json:"discount_sets"`
 	NonDiscountSet ItemsSet        `json:"non_discount_set"`
@@ -111,7 +115,7 @@ func (c Cart) TotalSavings() int {
 		for productId, amount := range set.Set {
 			price := c.Items[productId].Product.Price
 			toPay := price * amount
-			saved := toPay * set.Discount / 100
+			saved := toPay * set.DiscountPercent / 100
 			total += saved
 		}
 	}

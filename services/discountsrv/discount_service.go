@@ -39,6 +39,7 @@ func (s Service) ApplyDiscounts(c cart.Cart, ctx context.Context) (cart.Cart, er
 		}
 
 		d := discount.Discount{
+			Name:    v.Name,
 			Rule:    v.Rule,
 			Percent: v.Percent,
 		}
@@ -72,7 +73,7 @@ func ApplyDiscountsToCart(c cart.Cart, discounts []discount.Discount) cart.Cart 
 	copy(c.DiscountSets, discountSetArr)
 
 	c.NonDiscountSet.Set = make(map[string]int)
-	c.NonDiscountSet.Discount = 0
+	c.NonDiscountSet.DiscountPercent = 0
 	for k, v := range leftItems {
 		c.NonDiscountSet.Set[k] = v.Amount
 	}

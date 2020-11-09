@@ -46,6 +46,7 @@ func (c DbCoupon) ToCoupon() discount.Coupon {
 	return discount.Coupon{
 		ID:      c.ID,
 		Code:    c.Code,
+		CartId:  c.CartId.String,
 		Name:    c.Name,
 		Rule:    rule,
 		Percent: c.DiscountPercent,

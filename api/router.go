@@ -55,7 +55,6 @@ func NewRouter(cfg RouterConfig) *Router {
 	}))
 
 	e.GET("/product", ListProducts(cfg.ProductService))
-	e.GET("/product/{id}", GetProductById(cfg.ProductService))
 	e.POST("/auth/login", Login(cfg.AuthService))
 	e.POST("/auth/register", Register(cfg.AuthService))
 
@@ -75,7 +74,8 @@ func NewRouter(cfg RouterConfig) *Router {
 	authGroup.GET("/cart", GetCart(cfg.CartService))
 	authGroup.POST("/cart/product", SetCartItemAmount(cfg.CartService))
 	authGroup.POST("/cart/coupon", ApplyCouponToCart(cfg.CartService))
-	authGroup.POST("/payment/pay/{order_id}", nil)
+	authGroup.DELETE("/cart/coupon/:coupon_code", DetachCouponFromCart(cfg.CartService))
+	authGroup.POST("/payment/pay/:order_id", nil)
 	authGroup.GET("/coupon", nil)
 
 	return &Router{e: e}
@@ -83,6 +83,20 @@ func NewRouter(cfg RouterConfig) *Router {
 
 type JSONResponse struct {
 	Data interface{} `json:"data"`
+}
+
+func DetachCouponFromCart(srv *cartsrv.Service) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		claims := c.Get("user").(*authsrv.Claims)
+		code := c.Param("coupon_code")
+
+		userCart, err := srv.DetachCoupon(claims.Id, code, context.Background())
+		if err != nil {
+			return err
+		}
+
+		return c.JSON(http.StatusOK, JSONResponse{Data: userCart})
+	}
 }
 
 type ApplyCouponRequest struct {

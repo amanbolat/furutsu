@@ -7,6 +7,7 @@ import (
 type Coupon struct {
 	ID      string    `json:"id"`
 	Code    string    `json:"code"`
+	CartId  string    `json:"cart_id"`
 	Name    string    `json:"name"`
 	Rule    Rule      `json:"rule"`
 	Percent int       `json:"percent"`
@@ -27,4 +28,8 @@ func (c Coupon) GetExpireTime() time.Time {
 
 func (c Coupon) IsExpired() bool {
 	return c.Expire.Before(time.Now())
+}
+
+func (c Coupon) IsUsed() bool {
+	return c.CartId != ""
 }

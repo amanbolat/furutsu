@@ -24,7 +24,7 @@ func TestService_GetCart(t *testing.T) {
 	}
 
 	for _, set := range c.DiscountSets {
-		fmt.Printf("Discount: %v, [%d]\n", set.Set, set.Discount)
+		fmt.Printf("DiscountPercent: %v, [%d]\n", set.Set, set.DiscountPercent)
 	}
 	fmt.Println(c.TotalForPayment())
 	fmt.Println(c.TotalSavings())

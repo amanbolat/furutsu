@@ -65,12 +65,12 @@ func TestApplyDiscountsToCart(t *testing.T) {
 	resCart := discountsrv.ApplyDiscountsToCart(c1, d1)
 	expectedDiscSet := []cart.ItemsSet{
 		{
-			Set:      map[string]int{"apple": 10},
-			Discount: 10,
+			Set:             map[string]int{"apple": 10},
+			DiscountPercent: 10,
 		},
 		{
-			Set:      map[string]int{"pear": 8, "banana": 4},
-			Discount: 30,
+			Set:             map[string]int{"pear": 8, "banana": 4},
+			DiscountPercent: 30,
 		},
 	}
 	assert.Equal(t, c1.Items, resCart.Items)
