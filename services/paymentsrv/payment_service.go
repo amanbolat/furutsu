@@ -2,7 +2,9 @@ package paymentsrv
 
 import (
 	"context"
+	"github.com/amanbolat/furutsu/internal/apperr"
 	"github.com/amanbolat/furutsu/internal/payment"
+	v "github.com/go-ozzo/ozzo-validation"
 
 	"github.com/amanbolat/furutsu/datastore"
 	"github.com/amanbolat/furutsu/internal/order"
@@ -18,11 +20,27 @@ func NewService(repo datastore.Repository) *Service {
 }
 
 type PayForTheOrderRequest struct {
-	CardData payment.CardData `json:"card_data"`
-	OrderId  string           `json:"order_id"`
+	payment.CardData
+	OrderId string `json:"order_id"`
+}
+
+func (req PayForTheOrderRequest) Validate() error {
+	return v.ValidateStruct(&req,
+		v.Field(&req.OrderId, v.Required),
+		v.Field(&req.CardData.Number, v.Required),
+		v.Field(&req.CardData.CVC, v.Required),
+		v.Field(&req.CardData.Holder, v.Required),
+		v.Field(&req.CardData.Year, v.Required),
+		v.Field(&req.CardData.Month, v.Required),
+	)
 }
 
 func (s Service) PayForTheOrder(req PayForTheOrderRequest, ctx context.Context) error {
+	err := req.Validate()
+	if err != nil {
+		return apperr.With(err, "payment could not been proceeded", "try later")
+	}
+
 	ordSrv := ordersrv.NewService(s.repo)
 	return ordSrv.UpdateOrderStatus(req.OrderId, order.StatusPaid, ctx)
 }

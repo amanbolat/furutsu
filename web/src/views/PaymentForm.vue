@@ -5,42 +5,42 @@
         h3 Make payment
         span Order ID: {{ orderId }}
         v-form.mt-4(v-model="validForm")
-          v-text-field(label="Card number" outlined dense)
-          v-text-field(label="Holder name" outlined dense)
+          v-text-field(v-model="cardData.number" label="Card number" outlined dense)
+          v-text-field(v-model="cardData.holder" label="Holder name" outlined dense)
           v-container
             v-row
               v-col
-                v-text-field(label="CVC" dense type="number")
+                v-text-field(v-model="cardData.cvc" label="CVC" dense type="number")
               v-col
-                v-select(label="Year" dense :items="availableYears")
+                v-select(v-model="cardData.year" label="Year" dense :items="availableYears" type="number")
               v-col
-                v-select(label="Month" dense :items="availableMonths")
-          v-btn(color="indigo").white--text Submit
+                v-select(v-model="cardData.month" label="Month" dense :items="availableMonths" type="number")
+          v-btn(color="orange darken-2" @click="makePayment").white--text Submit
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator'
+import {Component, Mixins, Vue} from 'vue-property-decorator'
 import api from '@/api/client'
-import eventBus from '@/utils/event_bus'
+import AppMixin from '@/mixins/AppMixin'
 
 @Component
-export default class OrderForm extends Vue {
+export default class PaymentForm extends Mixins(AppMixin) {
   private orderId = ''
   private validForm = false
   private cardData = {
     number: '',
-    holder: '',
-    month: '',
     year: '',
-    cvc: ''
+    month: '',
+    cvc: '',
+    holder: ''
   }
 
   get availableMonths() {
-    return Array.from({length: 12}, (v, k) => k + 1 )
+    return Array.from({length: 12}, (v, k) => k + 1)
   }
 
   get availableYears() {
-    return Array.from({length: 30}, (v, k) => k + 2021 )
+    return Array.from({length: 30}, (v, k) => k + 2021)
   }
 
   private created() {
@@ -48,14 +48,17 @@ export default class OrderForm extends Vue {
   }
 
   private makePayment() {
-    if (!this.validForm) {
-      return
-    }
-
-    api.post(`/payment/pay/${this.orderId}`).then((response) => {
-      console.log(response)
-    }).catch((err) => {
-      eventBus.$emit('app_err', err)
+    api.post(`/order/${this.orderId}/pay`, {
+      number: this.cardData.number,
+      year: parseInt(this.cardData.year),
+      month: parseInt(this.cardData.month),
+      cvc: parseInt(this.cardData.cvc),
+      holder: this.cardData.holder
+    }).then(() => {
+      this.showMessage('Payment succeed!')
+      this.$router.push('/order')
+    }).catch(() => {
+      this.showError({message: 'Payment failed', hint: 'Your payment was rejected'})
     })
   }
 }

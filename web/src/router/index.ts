@@ -35,7 +35,7 @@ const routes: Array<RouteConfig> = [
     meta: {needAuth: true}
   },
   {
-    path: '/payment',
+    path: '/order/:order_id/pay',
     name: 'PaymentForm',
     component: PaymentForm,
     meta: {needAuth: true}
@@ -61,7 +61,6 @@ function createRouter(): VueRouter {
     const needAuth = !!to.meta.needAuth
     if (needAuth) {
       if (!isAuthenticated) {
-        console.log('Router: not authed')
         eventBus.$emit('prompt_auth', () => {
           next()
         })

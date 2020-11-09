@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/amanbolat/furutsu/internal/apperr"
 	"github.com/amanbolat/furutsu/services/ordersrv"
+	"github.com/amanbolat/furutsu/services/paymentsrv"
 	"net/http"
 	"os"
 
@@ -27,6 +28,7 @@ type RouterConfig struct {
 	AuthService    *authsrv.Service
 	CartService    *cartsrv.Service
 	OrderService   *ordersrv.Service
+	PaymentService *paymentsrv.Service
 }
 
 func NewRouter(cfg RouterConfig) *Router {
@@ -73,6 +75,7 @@ func NewRouter(cfg RouterConfig) *Router {
 		Claims:     &authsrv.Claims{},
 		ContextKey: "jwt_token",
 	}))
+
 	authGroup.GET("/cart", GetCart(cfg.CartService))
 	authGroup.POST("/cart/product", SetCartItemAmount(cfg.CartService))
 	authGroup.POST("/cart/coupon", ApplyCouponToCart(cfg.CartService))
@@ -80,14 +83,32 @@ func NewRouter(cfg RouterConfig) *Router {
 	authGroup.PUT("/order", CreateOrder(cfg.OrderService))
 	authGroup.GET("/order", ListOrders(cfg.OrderService))
 	authGroup.GET("/order/:id", GetOrderById(cfg.OrderService))
-	authGroup.POST("/payment/pay/:order_id", nil)
-	authGroup.GET("/coupon", nil)
+	authGroup.POST("/order/:id/pay", MakePayment(cfg.PaymentService))
 
 	return &Router{e: e}
 }
 
 type JSONResponse struct {
 	Data interface{} `json:"data"`
+}
+
+func MakePayment(srv *paymentsrv.Service) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		orderId := c.Param("id")
+		req := paymentsrv.PayForTheOrderRequest{}
+		err := c.Bind(&req)
+		if err != nil {
+			return err
+		}
+		req.OrderId = orderId
+
+		err = srv.PayForTheOrder(req, context.Background())
+		if err != nil {
+			return err
+		}
+
+		return c.JSON(http.StatusOK, JSONResponse{})
+	}
 }
 
 func GetOrderById(srv *ordersrv.Service) echo.HandlerFunc {

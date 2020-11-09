@@ -20,7 +20,7 @@
             .font-weight-bold {{ sumFromCents(item.price).toFixed(2) }} $
     v-row(v-if="showView" dense).mt-4
       v-col
-        v-btn(dark color="indigo" @click="payForOrder" v-if="order.status === 'pending'") Pay
+        v-btn(dark color="orange darken-2" @click="payForOrder" v-if="order.status === 'pending'") Pay
       v-spacer
       v-col.d-flex.flex-column.align-end
         span Total: {{ sumFromCents(order.total).toFixed(2) }} $
@@ -29,12 +29,13 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator'
+import {Component, Mixins} from 'vue-property-decorator'
 import api from '@/api/client'
-import eventBus from '@/utils/event_bus'
+import AppMixin from '@/mixins/AppMixin'
 
 @Component
-export default class OrderForm extends Vue {
+export default class OrderForm extends Mixins(AppMixin)
+{
   private order: any = {}
 
   private headers = [
@@ -49,10 +50,6 @@ export default class OrderForm extends Vue {
 
   get showView(): boolean {
     return this.order && Object.keys(this.order).length > 0
-  }
-
-  private sumFromCents(cents: number): number {
-    return (cents / 100)
   }
 
   private payForOrder() {
@@ -71,7 +68,7 @@ export default class OrderForm extends Vue {
     api.get(`/order/${idParam}`).then((response) => {
       this.order = response.data.data
     }).catch((err) => {
-      eventBus.$emit('app_error', err)
+     this.showError(err)
     })
   }
 }

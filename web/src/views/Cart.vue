@@ -111,13 +111,13 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator'
+import {Component, Mixins, Vue} from 'vue-property-decorator'
 import api from '@/api/client'
 import sortCartItems from '@/utils/order_object_keys'
-import eventBus from '@/utils/event_bus'
+import AppMixin from '@/mixins/AppMixin'
 
 @Component
-export default class Cart extends Vue {
+export default class Cart extends Mixins(AppMixin) {
   private cart: any = null
   private couponCode = ''
 
@@ -145,11 +145,7 @@ export default class Cart extends Vue {
   public created() {
     this.getCart()
   }
-
-  private sumFromCents(cents: number): number {
-    return (cents / 100)
-  }
-
+  
   private calcItemTotal(item: any): number {
     return (item.product.price / 100 * item.amount)
   }
@@ -181,7 +177,7 @@ export default class Cart extends Vue {
       this.couponCode = ''
       this.handleGetCartResponse(response)
     }).catch((err) => {
-      eventBus.$emit('app_error', err)
+      this.showError(err)
     })
   }
 
@@ -189,7 +185,7 @@ export default class Cart extends Vue {
     api.delete(`/cart/coupon/${item.code}`).then((response) => {
       this.handleGetCartResponse(response)
     }).catch((err) => {
-      eventBus.$emit('app_error', err)
+      this.showError(err)
     })
   }
 
@@ -200,7 +196,7 @@ export default class Cart extends Vue {
     }).then((response: any) => {
       this.handleGetCartResponse(response)
     }).catch((err) => {
-      eventBus.$emit('app_error', err)
+      this.showError(err)
     })
   }
 
@@ -208,7 +204,7 @@ export default class Cart extends Vue {
     api.get('/cart').then((response) => {
       this.handleGetCartResponse(response)
     }).catch((err) => {
-      eventBus.$emit('app_error', err)
+      this.showError(err)
     })
   }
 
@@ -217,7 +213,7 @@ export default class Cart extends Vue {
       const order = response.data.data
       this.$router.push({name: 'OrderForm', params: {id: order.id, order: order}})
     }).catch((err) => {
-      eventBus.$emit('app_error', err)
+      this.showError(err)
     })
   }
 

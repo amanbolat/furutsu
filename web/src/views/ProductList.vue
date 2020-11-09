@@ -11,7 +11,7 @@
           v-card-actions
             v-menu(offset-y :close-on-content-click="false")
               template(v-slot:activator="{on, attrs}")
-                v-btn(color='orange' text v-on="on" v-bind="attrs") Add to cart
+                v-btn(color='orange darken-2' text v-on="on" v-bind="attrs") Add to cart
               v-card
                 v-card-text.d-flex.justify-center
                   el-input-number(v-model="addToCartAmount" :min="0" :step="1")
@@ -28,12 +28,13 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator'
+import {Component, Mixins} from 'vue-property-decorator'
 import api from '@/api/client'
 import eventBus from '@/utils/event_bus'
+import AppMixin from '@/mixins/AppMixin'
 
 @Component
-export default class ProductList extends Vue {
+export default class ProductList extends Mixins(AppMixin) {
   private products: object[] = []
   private addToCartmenu = false
   private addToCartAmount = 0
@@ -60,13 +61,9 @@ export default class ProductList extends Vue {
       amount: amount
     }).then(() => {
       this.addToCartAmount = 0
-      this.$notify({
-        title: `Success`,
-        message: `Added ${amount} ${product.name}s to the cart`,
-        duration: 1500,
-      })
+      this.showMessage(`Added ${amount} ${product.name}s to the cart`)
     }).catch((err) => {
-      eventBus.$emit('app_error', err)
+      this.showError(err)
     })
   }
 }

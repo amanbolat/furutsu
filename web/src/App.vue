@@ -2,11 +2,12 @@
   v-app#inspire
     v-app-bar(app='' color='white' flat='')
       v-container.py-0.fill-height
-        router-link(to="/") Home
+        router-link(to="/")
+          v-img(src="/logo.png" max-width="70")
         v-spacer
-        v-btn(icon color="indigo" to="/cart")
+        v-btn(icon color="orange darken-2" to="/cart")
           v-icon mdi-cart
-        v-btn(icon color="indigo" to="/order").mr-4
+        v-btn(icon color="orange darken-2" to="/order").mr-4
           v-icon mdi-shopping
         v-dialog(v-if="!isAuthenticated" v-model="authDialog" width="500" persistent)
           template(v-slot:activator="{on, attrs}")
@@ -82,7 +83,9 @@ export default class App extends Vue {
 
   private logout() {
     store.dispatch('Logout')
-    this.$router.push('/')
+    this.$router.push('/').catch(() => {
+      console.log('logged out with error')
+    })
   }
 
   private handlePromptAuth(handler: () => void) {
@@ -96,7 +99,7 @@ export default class App extends Vue {
     })
   }
 
-  private handleUnauthorizedRequest(error: any) {
+  private handleUnauthorizedRequest() {
     this.$notify({
       title: 'Unauthorized',
       message: 'Please sign in'
@@ -113,6 +116,8 @@ export default class App extends Vue {
   }
 
   private handleAppError(error: AppError) {
+    console.log('APP ERR')
+
     let err = {} as AppError
     if (!error.message) {
       err.message = 'Unknown error'
@@ -123,7 +128,6 @@ export default class App extends Vue {
       title: err.message,
       message: err.hint,
       type: 'error',
-      duration: 4000
     })
   }
 }
