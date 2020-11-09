@@ -84,10 +84,9 @@ export function decodeJwtToken(token: string): any {
 }
 
 function getTokenExpirationDate(token: string): Date | null {
-    let decoded: any
-    decoded = decodeJwtToken(token)
+    const decoded = decodeJwtToken(token)
 
-    if (!decoded.hasOwnProperty('exp')) {
+    if (!Object.prototype.hasOwnProperty.call(decoded, 'exp')) {
         return null
     }
 

@@ -115,3 +115,13 @@ VALUES ($1, $2, $3, $4, $5) RETURNING *`,
 
 	return dbCoupon.ToCoupon(), nil
 }
+
+func (s DiscountDataStore) GetCoupon(couponCode string, ctx context.Context) (discount.Coupon, error) {
+	var c DbCoupon
+	err := pgxscan.Get(ctx, s.repo, &c, `SELECT * FROM coupon WHERE code = $1`, couponCode)
+	if err != nil {
+		return discount.Coupon{}, err
+	}
+
+	return c.ToCoupon(), nil
+}

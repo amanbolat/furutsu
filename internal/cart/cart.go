@@ -1,15 +1,16 @@
 package cart
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/amanbolat/furutsu/internal/product"
 )
 
 type Item struct {
-	Id      string
-	Product product.Product
-	Amount  int
+	Id      string          `json:"id"`
+	Product product.Product `json:"product"`
+	Amount  int             `json:"amount"`
 }
 
 // ItemSet is set of items in cart which could have discounts
@@ -18,24 +19,88 @@ type Item struct {
 type ItemsSet struct {
 	// Set represent set of multiple items and their amounts
 	// which share one discount
-	Set      map[string]int
-	Discount int
+	Set      map[string]int `json:"set"`
+	Discount int            `json:"discount"`
 }
 
 type Coupon interface {
 	GetPercentage() int
 	GetName() string
 	GetExpireTime() time.Time
+	IsExpired() bool
+}
+
+type Alias Cart
+
+type jsonCart struct {
+	TotalSaving     int           `json:"total_saving"`
+	Total           int           `json:"total"`
+	TotalForPayment int           `json:"total_for_payment"`
+	DiscountSets    []interface{} `json:"discount_sets"`
+	NonDiscountSet  []jsonItem    `json:"non_discount_set"`
+	*Alias
+}
+
+type jsonItem struct {
+	Id       string          `json:"id"`
+	Product  product.Product `json:"product"`
+	Amount   int             `json:"amount"`
+	Discount int             `json:"discount"`
+}
+
+func (c Cart) MarshalJSON() ([]byte, error) {
+	var discountSets []interface{}
+
+	for _, set := range c.DiscountSets {
+		d := set.Discount
+		var setItems []jsonItem
+		for pId, amount := range set.Set {
+			item := jsonItem{
+				Id:       c.Items[pId].Id,
+				Product:  c.Items[pId].Product,
+				Amount:   amount,
+				Discount: d,
+			}
+			setItems = append(setItems, item)
+		}
+		discountSets = append(discountSets, setItems)
+	}
+
+	var nonDiscountSet []jsonItem
+
+	for pId, amount := range c.NonDiscountSet.Set {
+		if amount < 1 {
+			continue
+		}
+		item := jsonItem{
+			Id:       c.Items[pId].Id,
+			Product:  c.Items[pId].Product,
+			Amount:   amount,
+			Discount: 0,
+		}
+		nonDiscountSet = append(nonDiscountSet, item)
+	}
+
+	ps := &jsonCart{
+		DiscountSets:    discountSets,
+		NonDiscountSet:  nonDiscountSet,
+		TotalForPayment: c.TotalForPayment(),
+		Total:           c.Total(),
+		TotalSaving:     c.TotalSavings(),
+		Alias:           (*Alias)(&c),
+	}
+
+	return json.Marshal(ps)
 }
 
 type Cart struct {
-	Id string
-	UserId string
+	Id     string `json:"id"`
+	UserId string `json:"user_id"`
 	// Items is map items as of product_id:CartItem
-	Items          map[string]Item
-	DiscountSets   []ItemsSet
-	NonDiscountSet ItemsSet
-	Coupons        []Coupon
+	Items          map[string]Item `json:"items"`
+	DiscountSets   []ItemsSet      `json:"discount_sets"`
+	NonDiscountSet ItemsSet        `json:"non_discount_set"`
+	Coupons        []Coupon        `json:"coupons"`
 }
 
 // TotalSavings is a sum of money which could be saved

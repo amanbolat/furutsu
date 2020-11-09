@@ -47,7 +47,7 @@ func NewServer(cfg config.Config, logger *logrus.Logger) (*Server, error) {
 func (s Server) Start(port int) {
 	go func() {
 		if err := s.router.e.Start(fmt.Sprintf(":%d", port)); err != nil {
-			s.logger.Fatalf("failed to start server: %s", err.Error())
+			s.logger.WithError(err).Warn()
 		}
 	}()
 
@@ -57,6 +57,6 @@ func (s Server) Start(port int) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := s.router.e.Shutdown(ctx); err != nil {
-		s.logger.Fatal(err)
+		s.logger.WithError(err).Warn()
 	}
 }

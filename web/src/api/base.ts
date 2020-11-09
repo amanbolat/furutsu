@@ -1,6 +1,5 @@
 import axios, {AxiosError, AxiosRequestConfig} from 'axios'
 import eventBust from '../utils/event_bus'
-import {AuthManager} from './auth'
 import store from '@/store/index'
 
 function axiosConfig(baseUrl: string): AxiosRequestConfig {
@@ -13,7 +12,7 @@ function axiosConfig(baseUrl: string): AxiosRequestConfig {
     }
 }
 
-export function serviceInstance(baseUrl: string, authManager: AuthManager) {
+export function serviceInstance(baseUrl: string) {
     const instance = axios.create(axiosConfig(baseUrl))
 
     instance.interceptors.request.use((cfg) => {
@@ -22,9 +21,9 @@ export function serviceInstance(baseUrl: string, authManager: AuthManager) {
     })
 
     instance.interceptors.response.use(undefined, (error: AxiosError) => {
-        return new Promise(async (resolve, reject) => {
+        return new Promise((resolve, reject) => {
             if (error.response && error.response.status === 401) {
-                await store.dispatch('Logout')
+                store.dispatch('Logout')
                 eventBust.$emit('unauthorized_request')
                 return
             }

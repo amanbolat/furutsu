@@ -95,6 +95,13 @@ func TestRuleItemsAll_Check(t *testing.T) {
 }
 
 func TestRuleItemsSet_Check(t *testing.T) {
+	bananaPearRule := discount.RuleItemsSet{
+		ItemSet: map[string]int{
+			"pear":   4,
+			"banana": 2,
+		},
+	}
+
 	var testTable = []struct {
 		name         string
 		rule         discount.RuleItemsSet
@@ -103,13 +110,8 @@ func TestRuleItemsSet_Check(t *testing.T) {
 		outLeftItems map[string]cart.Item
 	}{
 		{
-			name: "4 pears, 2 bananas discount - 1 set",
-			rule: discount.RuleItemsSet{
-				ItemSet: map[string]int{
-					"pear":   4,
-					"banana": 2,
-				},
-			},
+			name: "4 pears, 2 bananas - 1 set",
+			rule: bananaPearRule,
 			inItems: map[string]cart.Item{
 				"pear": {Product: product.Product{
 					ID: "pear"},
@@ -133,13 +135,8 @@ func TestRuleItemsSet_Check(t *testing.T) {
 			},
 		},
 		{
-			name: "4 pears, 2 bananas discount - 2 sets",
-			rule: discount.RuleItemsSet{
-				ItemSet: map[string]int{
-					"pear":   4,
-					"banana": 2,
-				},
-			},
+			name: "10 pears, 10 bananas - 2 sets",
+			rule: bananaPearRule,
 			inItems: map[string]cart.Item{
 				"pear": {Product: product.Product{
 					ID: "pear"},
@@ -163,13 +160,8 @@ func TestRuleItemsSet_Check(t *testing.T) {
 			},
 		},
 		{
-			name: "4 pears, 2 bananas discount - 0 set",
-			rule: discount.RuleItemsSet{
-				ItemSet: map[string]int{
-					"pear":   4,
-					"banana": 2,
-				},
-			},
+			name: "7 pears, 1 bananas - 0 set",
+			rule: bananaPearRule,
 			inItems: map[string]cart.Item{
 				"pear": {Product: product.Product{
 					ID: "pear"},
@@ -189,6 +181,31 @@ func TestRuleItemsSet_Check(t *testing.T) {
 				"banana": {Product: product.Product{
 					ID: "banana"},
 					Amount: 1,
+				},
+			},
+		},
+		{
+			name: "18 pears, 2 bananas discount - 1 set",
+			rule: bananaPearRule,
+			inItems: map[string]cart.Item{
+				"pear": {Product: product.Product{
+					ID: "pear"},
+					Amount: 18,
+				},
+				"banana": {Product: product.Product{
+					ID: "banana"},
+					Amount: 2,
+				},
+			},
+			outSet: map[string]int{"pear": 4, "banana": 2},
+			outLeftItems: map[string]cart.Item{
+				"pear": {Product: product.Product{
+					ID: "pear"},
+					Amount: 14,
+				},
+				"banana": {Product: product.Product{
+					ID: "banana"},
+					Amount: 0,
 				},
 			},
 		},

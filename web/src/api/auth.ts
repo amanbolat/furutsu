@@ -1,7 +1,6 @@
 import {AxiosError, AxiosInstance} from 'axios'
 import {authServiceInstance} from './base'
 import config from '../config'
-import store from '@/store/index'
 
 export interface User {
     id: string;

@@ -18,13 +18,13 @@ INSERT INTO discount (name, rule, percent)
 VALUES ('set of 4 pears, 2 bananas 30%', '{
   "0645a967-badb-40d2-89fb-81c7b745899c": 4,
   "748cb518-1bd4-4f45-98ba-be016b39827e": 2
-}', 10);
+}', 30);
 
 -- Coupons
 INSERT INTO public.coupon (code, name, expire_at, rule, discount_percent)
 VALUES ('orange123', 'orange 10%', '2021-11-06 15:30:31.542000', '{
   "e7f83943-7044-4406-9d32-9b229725f6d0": 0
-}', 10);
+}', 30);
 
 
 -- User and its cart
@@ -48,6 +48,6 @@ WITH tmp AS (
     WHERE u.username = 'aman'
 )
 INSERT INTO cart_item (cart_id, product_id, amount)
-SELECT id, 'e7f83943-7044-4406-9d32-9b229725f6d0', 20
+SELECT id, '0645a967-badb-40d2-89fb-81c7b745899c', 20
 FROM tmp;
 

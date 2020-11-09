@@ -2,7 +2,9 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/amanbolat/furutsu/internal/apperr"
 	"net/http"
 	"os"
 
@@ -30,7 +32,14 @@ func NewRouter(cfg RouterConfig) *Router {
 
 	e.HTTPErrorHandler = func(err error, c echo.Context) {
 		c.Logger().Error(err)
-		e.DefaultHTTPErrorHandler(err, c)
+		if errors.As(err, &apperr.Error{}) {
+			err = c.JSON(echo.ErrInternalServerError.Code, err)
+			if err != nil {
+				c.Logger().Error(err)
+			}
+		} else {
+			e.DefaultHTTPErrorHandler(err, c)
+		}
 	}
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Skipper: middleware.DefaultSkipper,
@@ -64,12 +73,9 @@ func NewRouter(cfg RouterConfig) *Router {
 		ContextKey: "jwt_token",
 	}))
 	authGroup.GET("/cart", GetCart(cfg.CartService))
-	authGroup.PUT("/cart/product", nil)
-	authGroup.POST("/cart/product", nil)
-	authGroup.PUT("/order", nil)
-	authGroup.GET("/order", nil)
-	authGroup.GET("/order/{id}", nil)
-	authGroup.POST("/payment/{order_id}", nil)
+	authGroup.POST("/cart/product", SetCartItemAmount(cfg.CartService))
+	authGroup.POST("/cart/coupon", ApplyCouponToCart(cfg.CartService))
+	authGroup.POST("/payment/pay/{order_id}", nil)
 	authGroup.GET("/coupon", nil)
 
 	return &Router{e: e}
@@ -77,6 +83,52 @@ func NewRouter(cfg RouterConfig) *Router {
 
 type JSONResponse struct {
 	Data interface{} `json:"data"`
+}
+
+type ApplyCouponRequest struct {
+	Code string `json:"code"`
+}
+
+func ApplyCouponToCart(srv *cartsrv.Service) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		claims := c.Get("user").(*authsrv.Claims)
+		var req ApplyCouponRequest
+		err := c.Bind(&req)
+		if err != nil {
+			return err
+		}
+
+		userCart, err := srv.ApplyCoupon(claims.Id, req.Code, context.Background())
+		if err != nil {
+			return err
+		}
+
+		return c.JSON(http.StatusOK, JSONResponse{Data: userCart})
+	}
+}
+
+type SetCartItemRequest struct {
+	ProductId string `json:"product_id"`
+	Amount    int    `json:"amount"`
+}
+
+func SetCartItemAmount(srv *cartsrv.Service) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		claims := c.Get("user").(*authsrv.Claims)
+		var req SetCartItemRequest
+		err := c.Bind(&req)
+		if err != nil {
+			return echo.ErrInternalServerError
+		}
+		updatedCart, err := srv.SetItemAmount(req.ProductId, claims.Id, req.Amount, context.Background())
+		if err != nil {
+			return err
+		}
+
+		return c.JSON(http.StatusOK, JSONResponse{
+			Data: updatedCart,
+		})
+	}
 }
 
 func GetCart(srv *cartsrv.Service) echo.HandlerFunc {
@@ -121,13 +173,13 @@ func Login(srv *authsrv.Service) echo.HandlerFunc {
 		err := c.Bind(&creds)
 		c.Logger().Error(err)
 		if err != nil {
-			return echo.ErrUnauthorized
+			return err
 		}
 
 		token, err := srv.Login(creds, context.Background())
 		c.Logger().Error(err)
 		if err != nil {
-			return echo.ErrUnauthorized
+			return err
 		}
 
 		return c.JSON(http.StatusOK, JSONResponse{Data: token})

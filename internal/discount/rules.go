@@ -3,6 +3,7 @@ package discount
 import (
 	"encoding/json"
 	"github.com/amanbolat/furutsu/internal/cart"
+	"sort"
 )
 
 type Rule interface {
@@ -21,8 +22,8 @@ const (
 )
 
 type RuleItemsAll struct {
-	ProductID string
-	Amount    int
+	ProductID string `json:"product_id"`
+	Amount    int    `json:"amount"`
 }
 
 func (r RuleItemsAll) ToJSON() []byte {
@@ -47,9 +48,8 @@ func (r RuleItemsAll) Check(items map[string]cart.Item) (discountSet map[string]
 }
 
 type RuleItemsSet struct {
-	ItemSet map[string]int
+	ItemSet map[string]int `json:"item_set"`
 }
-
 
 func (r RuleItemsSet) ToJSON() []byte {
 	b, _ := json.Marshal(r.ItemSet)
@@ -63,38 +63,29 @@ func (r RuleItemsSet) Check(items map[string]cart.Item) (discountSet map[string]
 		oldItems[k] = v
 	}
 
-	var maxNeedProduct string
-	var maxNeedAmount int
-	for p, a := range r.ItemSet {
-		if a > maxNeedAmount {
-			maxNeedAmount = a
-			maxNeedProduct = p
-		}
+	var setCount []int
+	for pId, need := range r.ItemSet {
+		i := items[pId]
+		maxSets := i.Amount / need
+		setCount = append(setCount, maxSets)
 	}
+	sort.Ints(setCount)
 
-	item, ok := items[maxNeedProduct]
-	if !ok {
+	if len(setCount) < 1 {
 		return nil, oldItems
 	}
 
-	maxSets := item.Amount / maxNeedAmount
+	minSet := setCount[0]
+	if len(setCount) != len(r.ItemSet) || minSet < 1 {
+		return nil, oldItems
+	}
 
-	for productId, amountNeeded := range r.ItemSet {
-		item, ok := items[productId]
-		if !ok {
-			break
-		}
-
-		var setsAdded int
-		leftAmount := item.Amount
-		for leftAmount >= amountNeeded && setsAdded < maxSets {
-			leftAmount -= amountNeeded
-			setsAdded += 1
-			discSet[productId] += amountNeeded
-			items[productId] = cart.Item{
-				Product: item.Product,
-				Amount:  leftAmount,
-			}
+	for pId, need := range r.ItemSet {
+		discSet[pId] += need * minSet
+		leftAmount := items[pId].Amount - discSet[pId]
+		items[pId] = cart.Item{
+			Product: items[pId].Product,
+			Amount:  leftAmount,
 		}
 	}
 

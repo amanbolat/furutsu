@@ -4,7 +4,7 @@
       v-container.py-0.fill-height
         router-link(to="/") Home
         v-spacer
-        v-btn(icon color="indigo")
+        v-btn(icon color="indigo" to="/cart")
           v-icon mdi-cart
         v-btn(icon color="indigo").mr-4
           v-icon mdi-shopping
@@ -58,25 +58,22 @@ export default class App extends Vue {
   }
 
   private handleUnauthorizedRequest(error: any) {
-    if (this.$router.currentRoute.path === '/login') {
-      return
+    this.$notify({
+      title: 'Unauthorized',
+      message: 'Please sign in'
+    })
+    if (this.$router.currentRoute.path !== '/') {
+      this.$router.push('/')
     }
-    this.$router.push('/login')
-    // this.$notify({
-    //   title: this.$t('auth.session_expired') as string,
-    //   message: this.$t('auth.need_login') as string
-    // })
   }
 
   private handleAppError(error: AppError) {
-    console.log(`APP ERROR: ${error}`)
-
-    // this.$notify({
-    //   title: error.message,
-    //   message: error.hint,
-    //   type: 'error',
-    //   duration: 4000
-    // })
+    this.$notify({
+      title: error.message,
+      message: error.hint,
+      type: 'error',
+      duration: 4000
+    })
   }
 }
 </script>

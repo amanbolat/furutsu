@@ -31,7 +31,7 @@
 </template>
 
 <script lang="ts">
-import {Vue, Component} from 'vue-property-decorator'
+import {Component, Vue} from 'vue-property-decorator'
 import eventBus from '../../utils/event_bus'
 
 @Component({
@@ -62,13 +62,12 @@ export default class Login extends Vue {
       this.isLoading = true
       this.$store.dispatch('Login', this.loginForm).then(() => {
         this.isLoading = false
-        this.$router.push({path: '/'}).
-        catch((err)=>{
-          console.log(err)
+        this.$router.push({path: '/'}
+        ).catch((err) => {
+          return
         })
       }).catch((error: any) => {
         this.isLoading = false
-        console.log(error)
         eventBus.$emit('app_error', error)
       })
     } else {

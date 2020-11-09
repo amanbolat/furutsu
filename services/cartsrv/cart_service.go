@@ -3,8 +3,8 @@ package cartsrv
 import (
 	"context"
 	"errors"
-
 	"github.com/amanbolat/furutsu/datastore"
+	"github.com/amanbolat/furutsu/internal/apperr"
 	"github.com/amanbolat/furutsu/internal/cart"
 	"github.com/amanbolat/furutsu/services/discountsrv"
 )
@@ -57,13 +57,19 @@ func (s Service) GetCart(userId string, ctx context.Context) (cart.Cart, error) 
 
 // SetItemAmount used to add, remove items from the cart
 // or to change its amount
-func (s Service) SetItemAmount(cartId, productId, userId string, amount int, ctx context.Context) (cart.Cart, error) {
+func (s Service) SetItemAmount(productId, userId string, amount int, ctx context.Context) (cart.Cart, error) {
 	tx, err := s.repo.Begin(ctx)
 	if err != nil {
 		return cart.Cart{}, err
 	}
 
 	ds := datastore.NewCartDataStore(tx)
+	cartId, err := ds.GetCartIdForUser(userId, ctx)
+	if err != nil {
+		_ = tx.Rollback(ctx)
+		return cart.Cart{}, err
+	}
+
 	_, err = ds.GetCartItem(cartId, productId, ctx)
 	// If no cart item found we should create a new one,
 	// so ErrNoRecords hasn't to be returned
@@ -109,20 +115,43 @@ func (s Service) SetItemAmount(cartId, productId, userId string, amount int, ctx
 	return c, nil
 }
 
-func (s Service) ApplyCoupon(userId, couponId string, ctx context.Context) (cart.Cart, error) {
+func (s Service) ApplyCoupon(userId, couponCode string, ctx context.Context) (cart.Cart, error) {
 	tx, err := s.repo.Begin(ctx)
 	if err != nil {
 		return cart.Cart{}, err
 	}
 
+	discountDs := datastore.NewDiscountDataStore(tx)
+	foundCoupon, err := discountDs.GetCoupon(couponCode, ctx)
+	if err != nil {
+		_ = tx.Rollback(ctx)
+		return cart.Cart{}, apperr.With(err, "couldn't find the coupon", "")
+	}
+	if foundCoupon.IsExpired() {
+		_ = tx.Rollback(ctx)
+		return cart.Cart{}, apperr.New("coupon has expired", "")
+	}
+
 	ds := datastore.NewCartDataStore(tx)
-	err = ds.AttachCoupon(userId, couponId, ctx)
+	c, err := ds.GetCartForUser(userId, ctx)
+	if err != nil {
+		_ = tx.Rollback(ctx)
+		return cart.Cart{}, err
+	}
+
+	dItems, _ := foundCoupon.Rule.Check(c.Items)
+	if dItems == nil || len(dItems) < 1 {
+		_ = tx.Rollback(ctx)
+		return cart.Cart{}, apperr.New("no items in the cart to which the coupon could be applied", "")
+	}
+
+	err = ds.AttachCoupon(userId, couponCode, ctx)
 	if err != nil {
 		_ = tx.Rollback(ctx)
 		return cart.Cart{}, nil
 	}
 
-	c, err := s.GetCart(userId, ctx)
+	c, err = s.GetCart(userId, ctx)
 	if err != nil {
 		_ = tx.Rollback(ctx)
 		return cart.Cart{}, nil
@@ -136,14 +165,14 @@ func (s Service) ApplyCoupon(userId, couponId string, ctx context.Context) (cart
 	return c, nil
 }
 
-func (s Service) RemoveCoupon(userId, couponId string, ctx context.Context) (cart.Cart, error) {
+func (s Service) RemoveCoupon(userId, couponCode string, ctx context.Context) (cart.Cart, error) {
 	tx, err := s.repo.Begin(ctx)
 	if err != nil {
 		return cart.Cart{}, err
 	}
 
 	ds := datastore.NewCartDataStore(tx)
-	err = ds.DetachCoupon(userId, couponId, ctx)
+	err = ds.DetachCoupon(couponCode, ctx)
 	if err != nil {
 		_ = tx.Rollback(ctx)
 		return cart.Cart{}, nil

@@ -50,7 +50,7 @@ type DbCart struct {
 
 func (dc DbCart) ToCart() cart.Cart {
 	return cart.Cart{
-		Id: dc.Id,
+		Id:     dc.Id,
 		UserId: dc.UserId,
 	}
 }
@@ -153,6 +153,16 @@ func (s CartDataStore) GetCartItem(cartId, productId string, ctx context.Context
 	return item.ToCartItem(), nil
 }
 
+func (s CartDataStore) GetCartIdForUser(userId string, ctx context.Context) (string, error) {
+	var id string
+	err := pgxscan.Get(ctx, s.querier, &id, `SELECT id FROM cart WHERE user_id = $1`, userId)
+	if err != nil {
+		return "", err
+	}
+
+	return id, nil
+}
+
 func (s CartDataStore) DeleteCartItem(cartId, productId string, ctx context.Context) error {
 	rows, err := s.querier.Query(ctx,
 		`DELETE FROM cart_item WHERE cart_id = $1 AND product_id = $2`,
@@ -180,7 +190,7 @@ func (s CartDataStore) SetCartItemAmount(cartId, productId string, amount int, c
 	return nil
 }
 
-func (s CartDataStore) AttachCoupon(userId, couponId string, ctx context.Context) error {
+func (s CartDataStore) AttachCoupon(userId, couponCode string, ctx context.Context) error {
 	rows, err := s.querier.Query(ctx,
 		`
 WITH utable AS (
@@ -191,10 +201,10 @@ WITH utable AS (
 UPDATE coupon
 SET cart_id = utable.id
 FROM utable
-WHERE coupon.id = $2
+WHERE coupon.code = $2
   AND coupon.expire_at > current_timestamp`,
 		userId,
-		couponId,
+		couponCode,
 	)
 	if err != nil {
 		return err
@@ -204,13 +214,12 @@ WHERE coupon.id = $2
 	return nil
 }
 
-func (s CartDataStore) DetachCoupon(userId, couponId string, ctx context.Context) error {
+func (s CartDataStore) DetachCoupon(couponCode string, ctx context.Context) error {
 	rows, err := s.querier.Query(ctx, `
 UPDATE coupon
 SET cart_id = NULL
-WHERE id = $1
-  AND user_id = $2
-`, couponId, userId)
+WHERE code = $1
+`, couponCode)
 
 	if err != nil {
 		return err

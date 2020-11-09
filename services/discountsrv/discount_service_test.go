@@ -1,13 +1,12 @@
 package discountsrv_test
 
 import (
-	"testing"
-
 	"github.com/amanbolat/furutsu/internal/cart"
 	"github.com/amanbolat/furutsu/internal/discount"
 	"github.com/amanbolat/furutsu/internal/product"
 	"github.com/amanbolat/furutsu/services/discountsrv"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestApplyDiscountsToCart(t *testing.T) {

@@ -35,11 +35,7 @@ func TestService_SetItemAmount(t *testing.T) {
 	assert.NoError(t, err)
 
 	srv := cartsrv.NewCartService(datastore.NewPgxConn(conn))
-	c, err := srv.SetItemAmount(
-		"e80c0969-0332-42f6-a983-6ad237f317b4",
-		"748cb518-1bd4-4f45-98ba-be016b39827e",
-		"9a5f9080-978f-4260-8a45-1c3fbd30b6d4",
-		10, context.Background())
+	c, err := srv.SetItemAmount("748cb518-1bd4-4f45-98ba-be016b39827e", "9a5f9080-978f-4260-8a45-1c3fbd30b6d4", 10, context.Background())
 	assert.NoError(t, err)
 
 	t.Log(c)

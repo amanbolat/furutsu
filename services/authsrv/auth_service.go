@@ -2,8 +2,7 @@ package authsrv
 
 import (
 	"context"
-	"errors"
-	"fmt"
+	"github.com/amanbolat/furutsu/internal/apperr"
 	"github.com/jackc/pgx/v4"
 	"time"
 
@@ -38,11 +37,11 @@ func (s Service) Login(creds Credentials, ctx context.Context) (string, error) {
 	ds := datastore.NewUserDataStore(s.dbConn)
 	u, err := ds.GetUserByUsername(creds.Username, ctx)
 	if err != nil {
-		return "", errors.New(fmt.Sprintf("wrong credentials: %v", err))
+		return "", apperr.With(err, "Wrong credentials", "Username or password is incorrect")
 	}
 
 	if u.Password != creds.Password {
-		return "", errors.New("wrong credentials")
+		return "", apperr.With(err, "Wrong credentials", "Username or password is incorrect")
 	}
 
 	claims := &Claims{
@@ -57,7 +56,7 @@ func (s Service) Login(creds Credentials, ctx context.Context) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenStr, err := token.SignedString(JwtSecret)
 	if err != nil {
-		return "", errors.New(fmt.Sprintf("internal error: %v", err))
+		return "", apperr.With(err, "Unknown error", "")
 	}
 
 	return tokenStr, nil

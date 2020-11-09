@@ -2,8 +2,6 @@ package discountsrv
 
 import (
 	"context"
-	"time"
-
 	"github.com/amanbolat/furutsu/datastore"
 	"github.com/amanbolat/furutsu/internal/cart"
 	"github.com/amanbolat/furutsu/internal/discount"
@@ -31,7 +29,7 @@ func (s Service) ApplyDiscounts(c cart.Cart, ctx context.Context) (cart.Cart, er
 
 		// TODO: may be we should consider to put the check of expiration time
 		// into the database because of the different timezones
-		if coupon.GetPercentage() == 0 || coupon.GetExpireTime().Before(time.Now()) {
+		if coupon.GetPercentage() == 0 || coupon.IsExpired() {
 			continue
 		}
 
@@ -42,7 +40,7 @@ func (s Service) ApplyDiscounts(c cart.Cart, ctx context.Context) (cart.Cart, er
 
 		d := discount.Discount{
 			Rule:    v.Rule,
-			Percent: 0,
+			Percent: v.Percent,
 		}
 		discounts = append(discounts, d)
 	}
