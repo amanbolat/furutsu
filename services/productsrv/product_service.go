@@ -2,17 +2,17 @@ package productsrv
 
 import (
 	"context"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/amanbolat/furutsu/datastore"
 	"github.com/amanbolat/furutsu/internal/product"
 )
 
 type Service struct {
-	dbConn *pgx.Conn
+	dbConn *pgxpool.Pool
 }
 
-func NewProductService(conn *pgx.Conn) *Service {
+func NewProductService(conn *pgxpool.Pool) *Service {
 	return &Service{dbConn: conn}
 }
 

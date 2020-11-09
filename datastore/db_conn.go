@@ -3,6 +3,7 @@ package datastore
 import (
 	"context"
 	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type Repository interface {
@@ -47,10 +48,10 @@ func (p PgxTx) Begin(ctx context.Context) (RepoTx, error) {
 }
 
 type PgxConn struct {
-	conn *pgx.Conn
+	conn *pgxpool.Pool
 }
 
-func NewPgxConn(c *pgx.Conn) Repository {
+func NewPgxConn(c *pgxpool.Pool) Repository {
 	return &PgxConn{conn: c}
 }
 

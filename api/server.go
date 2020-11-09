@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"os"
 	"os/signal"
 	"time"
@@ -22,7 +22,13 @@ type Server struct {
 }
 
 func NewServer(cfg config.Config, logger *logrus.Logger) (*Server, error) {
-	conn, err := pgx.Connect(context.Background(), cfg.DbConnString)
+	connConfig, err := pgxpool.ParseConfig(cfg.DbConnString)
+	if err != nil {
+		return nil, err
+	}
+	connConfig.MaxConns = 10
+
+	conn, err := pgxpool.ConnectConfig(context.Background(), connConfig)
 	if err != nil {
 		return nil, err
 	}

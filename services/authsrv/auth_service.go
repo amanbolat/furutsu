@@ -3,7 +3,7 @@ package authsrv
 import (
 	"context"
 	"github.com/amanbolat/furutsu/internal/apperr"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"time"
 
 	"github.com/amanbolat/furutsu/datastore"
@@ -26,10 +26,10 @@ type Credentials struct {
 }
 
 type Service struct {
-	dbConn *pgx.Conn
+	dbConn *pgxpool.Pool
 }
 
-func NewAuthService(conn *pgx.Conn) *Service {
+func NewAuthService(conn *pgxpool.Pool) *Service {
 	return &Service{dbConn: conn}
 }
 
