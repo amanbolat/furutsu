@@ -254,7 +254,7 @@ func TestUpdateCartItems(t *testing.T) {
 
 func TestCartAttachDetachCoupon(t *testing.T) {
 	cds := datastore.NewCartDataStore(datastore.NewPgxConn(conn))
-	err := cds.AttachCoupon(testUser.Id, orangeCoupon.ID, context.Background())
+	err := cds.AttachCouponToCart(testUser.Id, orangeCoupon.ID, context.Background())
 	require.NoError(t, err)
 	userCart, err := cds.GetCartForUser(testUser.Id, context.Background())
 	require.NoError(t, err)

@@ -6,13 +6,13 @@
         v-spacer
         v-btn(icon color="indigo" to="/cart")
           v-icon mdi-cart
-        v-btn(icon color="indigo").mr-4
+        v-btn(icon color="indigo" to="/order").mr-4
           v-icon mdi-shopping
-        v-btn(v-if="isAuthenticated" @click="logout") Logout
-        v-dialog(v-else v-model="authDialog" width="500")
+        v-dialog(v-if="!isAuthenticated" v-model="authDialog" width="500" persistent)
           template(v-slot:activator="{on, attrs}")
-            v-btn(v-on="on" v-bind="attrs") Login
-          LoginForm
+            v-btn(v-if="!isAuthenticated" v-on="on" v-bind="attrs") Login
+          LoginForm(:success-login-handler="successLoginHandler" @close="closeLoginFormHandler")
+        v-btn(v-if="isAuthenticated" @click="logout") Logout
     v-main.grey.lighten-3
       v-container
         v-row
@@ -31,6 +31,7 @@ import {Component} from 'vue-property-decorator'
 import {AppError} from '@/api/base'
 import store from './store'
 import LoginForm from './views/components/login_form.vue'
+import isFunc from 'lodash/isFunction'
 
 @Component({
   name: 'App',
@@ -43,18 +44,56 @@ export default class App extends Vue {
     return store.getters.isAuthenticated
   }
 
+  private beforeSuccessLogin: any[] = []
+  private afterLoginRefused: any[] = []
+
+  public successLoginHandler() {
+    this.beforeSuccessLogin.forEach((f: () => void) => {
+      if (isFunc(f)) {
+        f()
+      }
+    })
+    this.beforeSuccessLogin = []
+    this.afterLoginRefused = []
+    this.authDialog = false
+  }
+
+  public closeLoginFormHandler() {
+    this.afterLoginRefused.forEach((f: () => void) => {
+      if (isFunc(f)) {
+        f()
+      }
+    })
+    this.afterLoginRefused = []
+    this.authDialog = false
+  }
+
   public created() {
     eventBus.$on('app_error', this.handleAppError)
+    eventBus.$on('prompt_auth', this.handlePromptAuth)
     eventBus.$on('unauthorized_request', this.handleUnauthorizedRequest)
   }
 
   public beforeDestroy() {
     eventBus.$off('app_error')
+    eventBus.$off('prompt_auth')
     eventBus.$off('unauthorized_request')
   }
 
   private logout() {
     store.dispatch('Logout')
+    this.$router.push('/')
+  }
+
+  private handlePromptAuth(handler: () => void) {
+    this.$set(this, 'authDialog', true)
+    this.beforeSuccessLogin.push(handler)
+
+    this.afterLoginRefused.push(() => {
+      this.$router.push('/').catch(() => {
+        console.log('handled auth prompt with error')
+      })
+    })
   }
 
   private handleUnauthorizedRequest(error: any) {
@@ -62,15 +101,27 @@ export default class App extends Vue {
       title: 'Unauthorized',
       message: 'Please sign in'
     })
-    if (this.$router.currentRoute.path !== '/') {
+    this.$set(this, 'authDialog', true)
+
+    this.beforeSuccessLogin.push(() =>{
+      this.$router.go(0)
+    })
+
+    this.afterLoginRefused.push(() => {
       this.$router.push('/')
-    }
+    })
   }
 
   private handleAppError(error: AppError) {
+    let err = {} as AppError
+    if (!error.message) {
+      err.message = 'Unknown error'
+    } else {
+      err = error
+    }
     this.$notify({
-      title: error.message,
-      message: error.hint,
+      title: err.message,
+      message: err.hint,
       type: 'error',
       duration: 4000
     })

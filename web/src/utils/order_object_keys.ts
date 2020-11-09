@@ -7,12 +7,15 @@ export default function (cart: any): any {
     })
 
     const newDiscSet: any[] = []
-    copy.discount_sets.forEach((val: any) => {
-        const set = sort(val, function (o: any) {
-            return o.id
+    if (copy.discount_sets) {
+        copy.discount_sets.forEach((val: any) => {
+            const set = sort(val, function (o: any) {
+                return o.id
+            })
+            newDiscSet.push(set)
         })
-        newDiscSet.push(set)
-    })
+    }
+
 
     copy.non_discount_set = nonDiscSet
     copy.discount_sets = newDiscSet

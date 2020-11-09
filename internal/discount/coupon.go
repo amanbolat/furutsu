@@ -23,6 +23,10 @@ func (c Coupon) GetName() string {
 	return c.Name
 }
 
+func (c Coupon) GetCode() string {
+	return c.Code
+}
+
 func (c Coupon) GetExpireTime() time.Time {
 	return c.Expire
 }
@@ -31,6 +35,6 @@ func (c Coupon) IsExpired() bool {
 	return c.Expire.Before(time.Now())
 }
 
-func (c Coupon) IsUsed() bool {
-	return c.CartId != "" || c.OrderId != ""
+func (c Coupon) IsUsed(cartId string) bool {
+	return c.CartId != cartId || c.OrderId != ""
 }

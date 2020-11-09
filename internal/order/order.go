@@ -3,14 +3,14 @@ package order
 import "time"
 
 type OrderItem struct {
-	Id                 string
-	OrderId            string
-	ProductName        string
-	ProductDescription string
-	Price              int
-	Amount             int
-	CreatedAt          time.Time
-	UpdatedAt          time.Time
+	Id                 string    `json:"id"`
+	OrderId            string    `json:"order_id"`
+	ProductName        string    `json:"product_name"`
+	ProductDescription string    `json:"product_description"`
+	Price              int       `json:"price"`
+	Amount             int       `json:"amount"`
+	CreatedAt          time.Time `json:"created_at"`
+	UpdatedAt          time.Time `json:"updated_at"`
 }
 
 type Status string
@@ -21,13 +21,13 @@ const (
 )
 
 type Order struct {
-	Id              string
-	UserId          string
-	Status          Status
-	Items           []OrderItem
-	Savings         int
-	Total           int
-	TotalForPayment int
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
+	Id              string      `json:"id"`
+	UserId          string      `json:"user_id"`
+	Status          Status      `json:"status"`
+	Items           []OrderItem `json:"items"`
+	Savings         int         `json:"savings"`
+	Total           int         `json:"total"`
+	TotalForPayment int         `json:"total_for_payment"`
+	CreatedAt       time.Time   `json:"created_at"`
+	UpdatedAt       time.Time   `json:"updated_at"`
 }

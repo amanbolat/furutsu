@@ -2,6 +2,7 @@ package ordersrv
 
 import (
 	"context"
+	"github.com/amanbolat/furutsu/internal/apperr"
 
 	"github.com/amanbolat/furutsu/datastore"
 	"github.com/amanbolat/furutsu/internal/order"
@@ -16,15 +17,28 @@ func NewService(repo datastore.Repository) *Service {
 	return &Service{repo: repo}
 }
 
-func (s Service) ListOrders() {
+func (s Service) ListOrders(userId string, ctx context.Context) ([]order.Order, error) {
+	ds := datastore.NewOrderDataStore(s.repo)
+	ol, err := ds.ListOrders(userId, ctx)
+	if err != nil {
+		return nil, err
+	}
 
+	return ol, nil
 }
 
-func (s Service) GetOrder() {
+func (s Service) GetOrderById(id, userId string, ctx context.Context) (order.Order, error) {
+	ds := datastore.NewOrderDataStore(s.repo)
+	o, err := ds.GetOrderById(id, userId, ctx)
+	if err != nil {
+		return order.Order{}, err
+	}
 
+	return o, nil
 }
 
-// CreateOrder checkouts all items int the cart and creates a new order
+// CreateOrder checkouts all items int the cart and creates a new order.
+// It clears all the items in the cart and binds all the coupons to the order.
 func (s Service) CreateOrder(userId string, ctx context.Context) (order.Order, error) {
 	var newOrder order.Order
 
@@ -40,6 +54,25 @@ func (s Service) CreateOrder(userId string, ctx context.Context) (order.Order, e
 		return order.Order{}, err
 	}
 
+	// Check coupons
+	for _, coupon := range c.Coupons {
+		if coupon.IsUsed(c.Id) || coupon.IsExpired() {
+			_ = tx.Rollback(ctx)
+			return order.Order{}, apperr.New("some coupons are already invalid", "please checkout the cart again")
+		}
+	}
+
+	cds := datastore.NewCartDataStore(tx)
+	// Detach coupons from the cart
+	for _, coupon := range c.Coupons {
+		err = cds.DetachCouponFromCart(coupon.GetCode(), ctx)
+		if err != nil {
+			_ = tx.Rollback(ctx)
+			return order.Order{}, apperr.With(err, "failed to create the order", "")
+		}
+	}
+
+	// Map items
 	for _, item := range c.Items {
 		oi := order.OrderItem{
 			ProductName:        item.Product.Name,
@@ -55,6 +88,7 @@ func (s Service) CreateOrder(userId string, ctx context.Context) (order.Order, e
 	newOrder.Status = order.StatusPending
 	newOrder.UserId = userId
 
+	// Clear cart
 	err = cartSrv.ClearCart(c.Id, ctx)
 	if err != nil {
 		_ = tx.Rollback(ctx)
@@ -65,7 +99,16 @@ func (s Service) CreateOrder(userId string, ctx context.Context) (order.Order, e
 	resOrder, err := ds.CreateOrder(newOrder, ctx)
 	if err != nil {
 		_ = tx.Rollback(ctx)
-		return order.Order{}, nil
+		return order.Order{}, err
+	}
+
+	// Attach coupons
+	for _, coupon := range c.Coupons {
+		err = cds.AttachCouponToOrder(resOrder.Id, coupon.GetCode(), ctx)
+		if err != nil {
+			_ = tx.Rollback(ctx)
+			return order.Order{}, apperr.With(err, "failed to create the order", "")
+		}
 	}
 
 	err = tx.Commit(ctx)
@@ -78,7 +121,7 @@ func (s Service) CreateOrder(userId string, ctx context.Context) (order.Order, e
 
 func (s Service) UpdateOrderStatus(orderId string, status order.Status, ctx context.Context) error {
 	ds := datastore.NewOrderDataStore(s.repo)
-	err := ds.UpdateStatus(orderId, status, ctx)
+	err := ds.UpdateOrderStatus(orderId, status, ctx)
 	if err != nil {
 		return err
 	}

@@ -1,6 +1,6 @@
 <template lang="pug">
   v-container(fluid)
-    v-row(v-if="cart" dense)
+    v-row(v-if="showView" dense)
       v-col.mt-4
         h3 Products without discounts
       v-col(
@@ -80,11 +80,11 @@
                 span.body-1 Total:
                 span.body-1.text-decoration-line-through.grey--text.mr-1 {{ calcSetTotal(set).toFixed(2) }}$
                 span.body-1.font-weight-bold {{ calcSetDiscountedTotal(set).toFixed(2) }}$
-    v-row.mt-4
+    v-row.mt-4(v-if="showView")
       v-col(cols="12" md="5").d-flex.align-center
         v-text-field.mr-4(v-model="couponCode" label="Coupon code" outlined dense hide-details)
         v-btn(dark color="orange" @click="applyCoupon") Apply
-    v-row(v-if="cart.coupons")
+    v-row(v-if="showView && cart.coupons.length > 0")
       v-col
         h3 Coupons
         v-data-table.mt-4(
@@ -96,14 +96,18 @@
         )
           template(v-slot:item.actions="{ item }")
             v-btn(dark color="red" @click="detachCoupon(item)") Remove
-    v-row
+    v-row(v-if="showView")
       v-col
-        v-btn(dark color="green") Checkout
+        v-btn(dark color="green" @click="checkout") Checkout
       v-spacer
       v-col.d-flex.flex-column.align-end(v-if="cart")
         span Total: {{ sumFromCents(cart.total).toFixed(2) }} $
         span Savings total: {{ sumFromCents(cart.total_saving).toFixed(2) }} $
-        span.font-weight-bold Total for payment {{ sumFromCents(cart.total_for_payment).toFixed(2) }} $
+        span.mt-4.font-weight-bold Total for payment {{ sumFromCents(cart.total_for_payment).toFixed(2) }} $
+    v-row(v-else)
+      v-col.d-flex.align-center.flex-column
+        h2 No items in the cart
+        span You can add products from the main page!
 </template>
 
 <script lang="ts">
@@ -114,7 +118,7 @@ import eventBus from '@/utils/event_bus'
 
 @Component
 export default class Cart extends Vue {
-  private cart: any = {}
+  private cart: any = null
   private couponCode = ''
 
   private couponsTableHeaders = [
@@ -123,6 +127,10 @@ export default class Cart extends Vue {
     {text: 'Percent', value: 'percent'},
     {text: '', value: 'actions', width: '100'}
   ]
+
+  get showView(): boolean {
+    return this.cart && Object.entries(this.cart.items).length > 0
+  }
 
   private handleChangeItemAmount(item: any, newAmount: number) {
     console.log(item)
@@ -199,6 +207,15 @@ export default class Cart extends Vue {
   private getCart() {
     api.get('/cart').then((response) => {
       this.handleGetCartResponse(response)
+    }).catch((err) => {
+      eventBus.$emit('app_error', err)
+    })
+  }
+
+  private checkout() {
+    api.put('/order').then((response) => {
+      const order = response.data.data
+      this.$router.push({name: 'OrderForm', params: {id: order.id, order: order}})
     }).catch((err) => {
       eventBus.$emit('app_error', err)
     })

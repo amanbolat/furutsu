@@ -58,11 +58,12 @@ export default class ProductList extends Vue {
     api.post('/cart/product', {
       product_id: product.id,
       amount: amount
-    }).then((_: any) => {
+    }).then(() => {
       this.addToCartAmount = 0
       this.$notify({
         title: `Success`,
         message: `Added ${amount} ${product.name}s to the cart`,
+        duration: 1500,
       })
     }).catch((err) => {
       eventBus.$emit('app_error', err)

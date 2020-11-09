@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"github.com/amanbolat/furutsu/services/ordersrv"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"os"
 	"os/signal"
@@ -36,10 +37,12 @@ func NewServer(cfg config.Config, logger *logrus.Logger) (*Server, error) {
 	productSrv := productsrv.NewProductService(conn)
 	authSrv := authsrv.NewAuthService(conn)
 	cartSrv := cartsrv.NewCartService(datastore.NewPgxConn(conn))
+	orderSrv := ordersrv.NewService(datastore.NewPgxConn(conn))
 	r := NewRouter(RouterConfig{
 		ProductService: productSrv,
 		AuthService:    authSrv,
 		CartService:    cartSrv,
+		OrderService:   orderSrv,
 	})
 
 	s := Server{

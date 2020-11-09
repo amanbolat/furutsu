@@ -190,7 +190,7 @@ func (s CartDataStore) SetCartItemAmount(cartId, productId string, amount int, c
 	return nil
 }
 
-func (s CartDataStore) AttachCoupon(userId, couponCode string, ctx context.Context) error {
+func (s CartDataStore) AttachCouponToCart(userId, couponCode string, ctx context.Context) error {
 	rows, err := s.querier.Query(ctx,
 		`
 WITH utable AS (
@@ -214,7 +214,7 @@ WHERE coupon.code = $2
 	return nil
 }
 
-func (s CartDataStore) DetachCoupon(couponCode string, ctx context.Context) error {
+func (s CartDataStore) DetachCouponFromCart(couponCode string, ctx context.Context) error {
 	rows, err := s.querier.Query(ctx, `
 UPDATE coupon
 SET cart_id = NULL
@@ -235,6 +235,23 @@ func (s CartDataStore) ClearCart(cartId string, ctx context.Context) error {
 		return err
 	}
 
+	defer rows.Close()
+
+	return nil
+}
+
+func (s CartDataStore) AttachCouponToOrder(orderId, couponCode string, ctx context.Context) error {
+	rows, err := s.querier.Query(ctx,
+		`
+UPDATE coupon
+SET order_id = $1
+WHERE code = $2`,
+		orderId,
+		couponCode,
+	)
+	if err != nil {
+		return err
+	}
 	defer rows.Close()
 
 	return nil

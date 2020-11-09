@@ -114,22 +114,6 @@ CREATE TABLE discount
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Coupon table
-CREATE TABLE coupon
-(
-    id               UUID PRIMARY KEY     DEFAULT uuid_generate_v4(),
-    code             TEXT UNIQUE NOT NULL CHECK ( length(code) > 5 ),
-    name             TEXT        NOT NULL CHECK ( length(name) > 0 AND length(name) < 1024 ),
-    cart_id          UUID REFERENCES cart (id),
-    user_id          UUID REFERENCES "user" (id),
-    order_id         UUID REFERENCES "order" (id),
-    expire_at        TIMESTAMPTZ NOT NULL,
-    rule             JSONB       NOT NULL,
-    discount_percent INTEGER     NOT NULL CHECK ( discount_percent > 0 AND discount_percent < 100),
-    created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
 -- Order table
 CREATE TABLE "order"
 (
@@ -154,6 +138,21 @@ CREATE TABLE order_item
     amount              INTEGER     NOT NULL,
     created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Coupon table
+CREATE TABLE coupon
+(
+    id               UUID PRIMARY KEY     DEFAULT uuid_generate_v4(),
+    code             TEXT UNIQUE NOT NULL CHECK ( length(code) > 5 ),
+    name             TEXT        NOT NULL CHECK ( length(name) > 0 AND length(name) < 1024 ),
+    cart_id          UUID REFERENCES cart (id),
+    order_id         UUID REFERENCES "order" (id),
+    expire_at        TIMESTAMPTZ NOT NULL,
+    rule             JSONB       NOT NULL,
+    discount_percent INTEGER     NOT NULL CHECK ( discount_percent > 0 AND discount_percent < 100),
+    created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- Payment table

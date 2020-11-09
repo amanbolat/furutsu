@@ -27,9 +27,10 @@ type ItemsSet struct {
 type Coupon interface {
 	GetPercentage() int
 	GetName() string
+	GetCode() string
 	GetExpireTime() time.Time
 	IsExpired() bool
-	IsUsed() bool
+	IsUsed(cartId string) bool
 }
 
 type Alias Cart

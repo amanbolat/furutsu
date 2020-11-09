@@ -121,22 +121,22 @@ func (s Service) ApplyCoupon(userId, couponCode string, ctx context.Context) (ca
 		return cart.Cart{}, err
 	}
 
+	ds := datastore.NewCartDataStore(tx)
+	c, err := ds.GetCartForUser(userId, ctx)
+	if err != nil {
+		_ = tx.Rollback(ctx)
+		return cart.Cart{}, err
+	}
+
 	discountDs := datastore.NewDiscountDataStore(tx)
 	foundCoupon, err := discountDs.GetCoupon(couponCode, ctx)
 	if err != nil {
 		_ = tx.Rollback(ctx)
 		return cart.Cart{}, apperr.With(err, "couldn't find the coupon", "")
 	}
-	if foundCoupon.IsExpired() || foundCoupon.IsUsed() {
+	if foundCoupon.IsExpired() || foundCoupon.IsUsed(c.Id) {
 		_ = tx.Rollback(ctx)
-		return cart.Cart{}, apperr.New("coupon is not valid anymore", "")
-	}
-
-	ds := datastore.NewCartDataStore(tx)
-	c, err := ds.GetCartForUser(userId, ctx)
-	if err != nil {
-		_ = tx.Rollback(ctx)
-		return cart.Cart{}, err
+		return cart.Cart{}, apperr.New("coupon code is not valid", "")
 	}
 
 	dItems, _ := foundCoupon.Rule.Check(c.Items)
@@ -145,7 +145,7 @@ func (s Service) ApplyCoupon(userId, couponCode string, ctx context.Context) (ca
 		return cart.Cart{}, apperr.New("no items in the cart to which the coupon could be applied", "")
 	}
 
-	err = ds.AttachCoupon(userId, couponCode, ctx)
+	err = ds.AttachCouponToCart(userId, couponCode, ctx)
 	if err != nil {
 		_ = tx.Rollback(ctx)
 		return cart.Cart{}, nil
@@ -172,7 +172,7 @@ func (s Service) DetachCoupon(userId, couponCode string, ctx context.Context) (c
 	}
 
 	ds := datastore.NewCartDataStore(tx)
-	err = ds.DetachCoupon(couponCode, ctx)
+	err = ds.DetachCouponFromCart(couponCode, ctx)
 	if err != nil {
 		_ = tx.Rollback(ctx)
 		return cart.Cart{}, nil

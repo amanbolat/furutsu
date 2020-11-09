@@ -2,6 +2,7 @@ package paymentsrv
 
 import (
 	"context"
+	"github.com/amanbolat/furutsu/internal/payment"
 
 	"github.com/amanbolat/furutsu/datastore"
 	"github.com/amanbolat/furutsu/internal/order"
@@ -17,11 +18,8 @@ func NewService(repo datastore.Repository) *Service {
 }
 
 type PayForTheOrderRequest struct {
-	CardNumber   int
-	HolderName   string
-	CardExpireAt string
-	CVC          int
-	OrderId      string
+	CardData payment.CardData `json:"card_data"`
+	OrderId  string           `json:"order_id"`
 }
 
 func (s Service) PayForTheOrder(req PayForTheOrderRequest, ctx context.Context) error {

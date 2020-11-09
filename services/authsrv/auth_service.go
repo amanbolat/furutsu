@@ -13,6 +13,8 @@ import (
 
 var JwtSecret = []byte("pan4HAPPENED8archaic2prolix")
 
+const sessionDuration = time.Hour * 24
+
 type Claims struct {
 	Id                 string `json:"user_id"`
 	Username           string `json:"username"`
@@ -49,7 +51,7 @@ func (s Service) Login(creds Credentials, ctx context.Context) (string, error) {
 		Username: u.Username,
 		FullName: u.FullName,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour).Unix(),
+			ExpiresAt: time.Now().Add(sessionDuration).Unix(),
 		},
 	}
 

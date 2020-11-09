@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/amanbolat/furutsu/internal/apperr"
+	"github.com/amanbolat/furutsu/services/ordersrv"
 	"net/http"
 	"os"
 
@@ -25,6 +26,7 @@ type RouterConfig struct {
 	ProductService *productsrv.Service
 	AuthService    *authsrv.Service
 	CartService    *cartsrv.Service
+	OrderService   *ordersrv.Service
 }
 
 func NewRouter(cfg RouterConfig) *Router {
@@ -75,6 +77,9 @@ func NewRouter(cfg RouterConfig) *Router {
 	authGroup.POST("/cart/product", SetCartItemAmount(cfg.CartService))
 	authGroup.POST("/cart/coupon", ApplyCouponToCart(cfg.CartService))
 	authGroup.DELETE("/cart/coupon/:coupon_code", DetachCouponFromCart(cfg.CartService))
+	authGroup.PUT("/order", CreateOrder(cfg.OrderService))
+	authGroup.GET("/order", ListOrders(cfg.OrderService))
+	authGroup.GET("/order/:id", GetOrderById(cfg.OrderService))
 	authGroup.POST("/payment/pay/:order_id", nil)
 	authGroup.GET("/coupon", nil)
 
@@ -83,6 +88,46 @@ func NewRouter(cfg RouterConfig) *Router {
 
 type JSONResponse struct {
 	Data interface{} `json:"data"`
+}
+
+func GetOrderById(srv *ordersrv.Service) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		claims := c.Get("user").(*authsrv.Claims)
+		id := c.Param("id")
+
+		o, err := srv.GetOrderById(id, claims.Id, context.Background())
+		if err != nil {
+			return err
+		}
+
+		return c.JSON(http.StatusOK, JSONResponse{Data: o})
+	}
+}
+
+func ListOrders(srv *ordersrv.Service) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		claims := c.Get("user").(*authsrv.Claims)
+
+		ol, err := srv.ListOrders(claims.Id, context.Background())
+		if err != nil {
+			return err
+		}
+
+		return c.JSON(http.StatusOK, JSONResponse{Data: ol})
+	}
+}
+
+func CreateOrder(srv *ordersrv.Service) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		claims := c.Get("user").(*authsrv.Claims)
+
+		o, err := srv.CreateOrder(claims.Id, context.Background())
+		if err != nil {
+			return err
+		}
+
+		return c.JSON(http.StatusOK, JSONResponse{Data: o})
+	}
 }
 
 func DetachCouponFromCart(srv *cartsrv.Service) echo.HandlerFunc {

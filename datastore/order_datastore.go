@@ -65,9 +65,9 @@ func (o DbOrder) ToOrder() order.Order {
 	}
 }
 
-func (d OrderDataStore) GetOrderById(id string, ctx context.Context) (order.Order, error) {
+func (d OrderDataStore) GetOrderById(id, userId string, ctx context.Context) (order.Order, error) {
 	var dbOrder DbOrder
-	err := pgxscan.Get(ctx, d.querier, &dbOrder, `SELECT * FROM "order" WHERE id = $1`, id)
+	err := pgxscan.Get(ctx, d.querier, &dbOrder, `SELECT * FROM "order" WHERE id = $1 AND user_id = $2`, id, userId)
 	if err != nil {
 		return order.Order{}, err
 	}
@@ -87,14 +87,14 @@ func (d OrderDataStore) GetOrderById(id string, ctx context.Context) (order.Orde
 	return resOrder, nil
 }
 
-func (d OrderDataStore) ListOrders(userId, ctx context.Context) ([]order.Order, error) {
+func (d OrderDataStore) ListOrders(userId string, ctx context.Context) ([]order.Order, error) {
 	var dbOrders []DbOrder
 	err := pgxscan.Select(ctx, d.querier, &dbOrders, `SELECT * FROM "order" WHERE user_id = $1`, userId)
 	if err != nil {
 		return nil, err
 	}
 
-	resOrders := make([]order.Order, len(dbOrders))
+	var resOrders []order.Order
 	for _, o := range dbOrders {
 		resOrders = append(resOrders, o.ToOrder())
 	}
@@ -106,8 +106,8 @@ func (d OrderDataStore) CreateOrder(ord order.Order, ctx context.Context) (order
 	var resOrder order.Order
 
 	rows, err := d.querier.Query(ctx,
-		`INSERT INTO "order" (user_id, status, total, savings)
-VALUES ($1, $2, $3, $4) RETURNING *`, ord.UserId, ord.Status, ord.Total, ord.Savings)
+		`INSERT INTO "order" (user_id, status, total, savings, total_for_payment)
+VALUES ($1, $2, $3, $4, $5) RETURNING *`, ord.UserId, ord.Status, ord.Total, ord.Savings, ord.TotalForPayment)
 	if err != nil {
 		return order.Order{}, err
 	}
@@ -140,7 +140,7 @@ VALUES ($1, $2, $3, $4, $5) RETURNING *`, item.ProductName, item.ProductDescript
 	return resOrder, nil
 }
 
-func (d OrderDataStore) UpdateStatus(orderId string, status order.Status, ctx context.Context) error {
+func (d OrderDataStore) UpdateOrderStatus(orderId string, status order.Status, ctx context.Context) error {
 	rows, err := d.querier.Query(ctx, `UPDATE "order" SET status = $1 WHERE id = $2`, status, orderId)
 	if err != nil {
 		return err
