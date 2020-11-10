@@ -77,6 +77,7 @@ func NewRouter(cfg RouterConfig) *Router {
 	}))
 
 	authGroup.GET("/cart", GetCart(cfg.CartService))
+	authGroup.PUT("/cart/product", AddProductToCart(cfg.CartService))
 	authGroup.POST("/cart/product", SetCartItemAmount(cfg.CartService))
 	authGroup.POST("/cart/coupon", ApplyCouponToCart(cfg.CartService))
 	authGroup.DELETE("/cart/coupon/:coupon_code", DetachCouponFromCart(cfg.CartService))
@@ -208,6 +209,28 @@ func SetCartItemAmount(srv *cartsrv.Service) echo.HandlerFunc {
 		return c.JSON(http.StatusOK, JSONResponse{
 			Data: updatedCart,
 		})
+	}
+}
+
+type AddCartItemRequest struct {
+	ProductId string `json:"product_id"`
+	Amount    int    `json:"amount"`
+}
+
+func AddProductToCart(srv *cartsrv.Service) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		claims := c.Get("user").(*authsrv.Claims)
+		var req AddCartItemRequest
+		err := c.Bind(&req)
+		if err != nil {
+			return echo.ErrInternalServerError
+		}
+		err = srv.AddProductToCart(req.ProductId, claims.Id, req.Amount, context.Background())
+		if err != nil {
+			return err
+		}
+
+		return c.JSON(http.StatusOK, JSONResponse{Data: "ok"})
 	}
 }
 

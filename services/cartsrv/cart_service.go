@@ -55,8 +55,54 @@ func (s Service) GetCart(userId string, ctx context.Context) (cart.Cart, error) 
 	return discountedCart, nil
 }
 
-// SetItemAmount used to add, remove items from the cart
-// or to change its amount
+// AddProductToCart adds a given amount of the product to cart as cart item
+// or create new ones
+func (s Service) AddProductToCart(productId, userId string, amount int, ctx context.Context) error {
+	tx, err := s.repo.Begin(ctx)
+	if err != nil {
+		return err
+	}
+
+	ds := datastore.NewCartDataStore(tx)
+	cartId, err := ds.GetCartIdForUser(userId, ctx)
+	if err != nil {
+		_ = tx.Rollback(ctx)
+		return err
+	}
+
+	foundItem, err := ds.GetCartItem(cartId, productId, ctx)
+	// If no cart item found we should create a new one,
+	// so ErrNoRecords hasn't to be returned
+	if err != nil && !errors.Is(err, datastore.ErrNoRecords) {
+		_ = tx.Rollback(ctx)
+		return err
+	}
+
+	newAmount := foundItem.Amount + amount
+
+	if errors.Is(err, datastore.ErrNoRecords) {
+		err = ds.CreateCartItem(cartId, productId, amount, ctx)
+		if err != nil {
+			_ = tx.Rollback(ctx)
+			return err
+		}
+	} else {
+		err = ds.SetCartItemAmount(cartId, productId, newAmount, ctx)
+		if err != nil {
+			_ = tx.Rollback(ctx)
+			return err
+		}
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// SetItemAmount sets a particular amount of cart items or removes them from the cart
 func (s Service) SetItemAmount(productId, userId string, amount int, ctx context.Context) (cart.Cart, error) {
 	tx, err := s.repo.Begin(ctx)
 	if err != nil {

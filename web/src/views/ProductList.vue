@@ -55,7 +55,7 @@ export default class ProductList extends Mixins(AppMixin) {
     if (amount < 1) {
       return
     }
-    api.post('/cart/product', {
+    api.put('/cart/product', {
       product_id: product.id,
       amount: amount
     }).then(() => {
