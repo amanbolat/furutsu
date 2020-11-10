@@ -110,13 +110,13 @@ func (s Service) SetItemAmount(productId, userId string, amount int, ctx context
 	}
 
 	ds := datastore.NewCartDataStore(tx)
-	cartId, err := ds.GetCartIdForUser(userId, ctx)
+	userCart, err := ds.GetCartForUser(userId, ctx)
 	if err != nil {
 		_ = tx.Rollback(ctx)
 		return cart.Cart{}, err
 	}
 
-	_, err = ds.GetCartItem(cartId, productId, ctx)
+	_, err = ds.GetCartItem(userCart.Id, productId, ctx)
 	// If no cart item found we should create a new one,
 	// so ErrNoRecords hasn't to be returned
 	if err != nil && !errors.Is(err, datastore.ErrNoRecords) {
@@ -126,24 +126,43 @@ func (s Service) SetItemAmount(productId, userId string, amount int, ctx context
 
 	// Create item if there isn't any
 	if errors.Is(err, datastore.ErrNoRecords) {
-		err = ds.CreateCartItem(cartId, productId, amount, ctx)
+		err = ds.CreateCartItem(userCart.Id, productId, amount, ctx)
 		if err != nil {
 			_ = tx.Rollback(ctx)
 			return cart.Cart{}, err
 		}
 		// Delete item if amount argument is less than 1
-	} else if amount < 1 {
-		err = ds.DeleteCartItem(cartId, productId, ctx)
-		if err != nil {
-			_ = tx.Rollback(ctx)
-			return cart.Cart{}, err
-		}
-		// Set new amount
 	} else {
-		err = ds.SetCartItemAmount(cartId, productId, amount, ctx)
-		if err != nil {
-			_ = tx.Rollback(ctx)
-			return cart.Cart{}, err
+		if amount < 1 {
+			err = ds.DeleteCartItem(userCart.Id, productId, ctx)
+			if err != nil {
+				_ = tx.Rollback(ctx)
+				return cart.Cart{}, err
+			}
+			// Set new amount
+		} else {
+			err = ds.SetCartItemAmount(userCart.Id, productId, amount, ctx)
+			if err != nil {
+				_ = tx.Rollback(ctx)
+				return cart.Cart{}, err
+			}
+		}
+	}
+
+	// Remove coupons if they are not applicable
+	// due to the some item might have been deleted
+	updatedCart, err := ds.GetCartForUser(userId, ctx)
+	if err != nil {
+		_ = tx.Rollback(ctx)
+		return cart.Cart{}, err
+	}
+	for _, coupon := range updatedCart.Coupons {
+		if !coupon.IsApplicableToItems(updatedCart.Items) {
+			err = ds.DetachCouponFromCart(coupon.GetCode(), ctx)
+			if err != nil {
+				_ = tx.Rollback(ctx)
+				return cart.Cart{}, err
+			}
 		}
 	}
 
@@ -153,6 +172,7 @@ func (s Service) SetItemAmount(productId, userId string, amount int, ctx context
 		_ = tx.Rollback(ctx)
 		return cart.Cart{}, err
 	}
+
 	err = tx.Commit(ctx)
 	if err != nil {
 		return cart.Cart{}, err
@@ -180,6 +200,12 @@ func (s Service) ApplyCoupon(userId, couponCode string, ctx context.Context) (ca
 		_ = tx.Rollback(ctx)
 		return cart.Cart{}, apperr.With(err, "coupon code is not valid", "")
 	}
+
+	if foundCoupon.CartId != "" {
+		_ = tx.Rollback(ctx)
+		return cart.Cart{}, apperr.New("coupon code is not valid", "")
+	}
+
 	if foundCoupon.IsExpired() || foundCoupon.IsUsed() || !foundCoupon.IsAppliedToCart(c.Id) {
 		_ = tx.Rollback(ctx)
 		return cart.Cart{}, apperr.New("coupon code is not valid", "")

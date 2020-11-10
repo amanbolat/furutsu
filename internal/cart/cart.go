@@ -29,6 +29,7 @@ type Coupon interface {
 	GetName() string
 	GetCode() string
 	GetExpireTime() time.Time
+	IsApplicableToItems(items map[string]Item) bool
 	IsExpired() bool
 	IsUsed() bool
 	IsAppliedToCart(cartId string) bool

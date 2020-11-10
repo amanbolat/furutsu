@@ -1,6 +1,7 @@
 package discount
 
 import (
+	"github.com/amanbolat/furutsu/internal/cart"
 	"time"
 )
 
@@ -41,4 +42,18 @@ func (c Coupon) IsAppliedToCart(cartId string) bool {
 
 func (c Coupon) IsUsed() bool {
 	return c.OrderId != ""
+}
+
+func (c Coupon) IsApplicableToItems(items map[string]cart.Item) bool {
+	dItems, _ := c.Rule.Check(items)
+	var discAppliedAmount int
+	for _, a := range dItems {
+		discAppliedAmount += a
+	}
+
+	if discAppliedAmount < 1 {
+		return false
+	}
+
+	return true
 }

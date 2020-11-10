@@ -1,4 +1,4 @@
-import axios, {AxiosError, AxiosRequestConfig, AxiosResponse} from 'axios'
+import axios, {AxiosError, AxiosRequestConfig} from 'axios'
 import eventBust from '../utils/event_bus'
 import store from '@/store/index'
 
@@ -19,25 +19,6 @@ export function serviceInstance(baseUrl: string) {
         cfg.headers.Authorization = `Bearer ${store.getters.authToken}`
         return cfg
     })
-
-    // instance.interceptors.response.use(undefined, (error: AxiosError) => {
-    //     return new Promise((resolve, reject) => {
-    //         if (error.response && error.response.status === 401) {
-    //             eventBust.$emit('unauthorized_request', !!store.getters.isAuthenticated)
-    //             store.dispatch('Logout')
-    //             return
-    //         }
-    //
-    //         const err = {} as AppError
-    //         err.message = "Internet connection problem"
-    //         if (error.response && error.response.data) {
-    //             err.message = error.response.data.message
-    //             err.hint = error.response.data.hint
-    //         }
-    //
-    //         reject(err)
-    //     })
-    // })
 
     instance.interceptors.response.use((response: any) => {
         return response

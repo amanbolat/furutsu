@@ -2,9 +2,8 @@ package ordersrv
 
 import (
 	"context"
-	"github.com/amanbolat/furutsu/internal/apperr"
-
 	"github.com/amanbolat/furutsu/datastore"
+	"github.com/amanbolat/furutsu/internal/apperr"
 	"github.com/amanbolat/furutsu/internal/order"
 	"github.com/amanbolat/furutsu/services/cartsrv"
 )
@@ -102,7 +101,7 @@ func (s Service) CreateOrder(userId string, ctx context.Context) (order.Order, e
 		return order.Order{}, err
 	}
 
-	// Attach coupons
+	// Attach coupons to the order
 	for _, coupon := range c.Coupons {
 		err = cds.AttachCouponToOrder(resOrder.Id, coupon.GetCode(), ctx)
 		if err != nil {

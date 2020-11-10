@@ -1,7 +1,7 @@
 <template lang="pug">
   v-card.w-100.elevation-3
     v-card-title
-      | Login form
+      | Login Form
     v-card-text
       v-form(ref="form" v-model="valid")
         v-text-field(
@@ -32,7 +32,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Emit, Mixins, Prop, Vue} from 'vue-property-decorator'
+import {Component, Emit, Mixins, Prop} from 'vue-property-decorator'
 import eventBus from '../../utils/event_bus'
 import store from '@/store'
 import AppMixin from '@/mixins/AppMixin'

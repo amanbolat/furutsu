@@ -48,6 +48,8 @@
           hide-default-footer
           disable-sort
         )
+          template(v-slot:item.expire="{ item }")
+            span {{ item.expire | parseTimestamp }}
           template(v-slot:item.actions="{ item }")
             v-btn(dark color="red" @click="detachCoupon(item)") Remove
     v-row(v-if="showView")
@@ -82,7 +84,8 @@ export default class Cart extends Mixins(AppMixin) {
 
   private couponsTableHeaders = [
     {text: 'Code', value: 'code'},
-    {text: 'Name', value: 'value'},
+    {text: 'Name', value: 'name'},
+    {text: 'Expire At', value: 'expire'},
     {text: 'Percent', value: 'percent'},
     {text: '', value: 'actions', width: '100'}
   ]

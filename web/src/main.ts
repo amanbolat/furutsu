@@ -7,7 +7,7 @@ import './style/index.scss'
 import Notifications  from 'vue-notification'
 import {InputNumber} from 'ant-design-vue'
 import 'ant-design-vue/lib/input-number/style/index.css'
-
+import './filters'
 
 Vue.config.productionTip = false
 Vue.use(Notifications)

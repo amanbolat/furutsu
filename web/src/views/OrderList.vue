@@ -13,7 +13,7 @@
           template(v-slot:item.id="{ item }")
             router-link(:to="{name: 'OrderForm', params: {id: item.id}}") {{ item.id }}
           template(v-slot:item.status="{ item }")
-            v-chip(dark :color="item.status === 'paid' ? 'green' : ''") {{ item.status }}
+            v-chip.text-capitalize(dark :color="item.status === 'paid' ? 'green' : ''") {{ item.status }}
           template(v-slot:item.total_for_payment="{ item }")
             .font-weight-bold {{ sumFromCents(item.total_for_payment).toFixed(2) }} $
           template(v-slot:item.action="{ item }")

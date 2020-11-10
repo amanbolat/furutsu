@@ -21,8 +21,8 @@
     v-main.grey.lighten-3
       v-container
         v-row
-          v-col
-            v-sheet.pa-5(min-height='70vh' rounded='lg')
+          v-col.d-flex.justify-center
+            v-sheet.pa-5(min-height='70vh' rounded='lg' max-width="54rem" width="54rem")
               transition(name="fade" mode="out-in")
                 router-view
         notifications(group="notify" position="top left")

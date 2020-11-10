@@ -81,7 +81,7 @@ export default class RegistrationForm extends Mixins(AppMixin) {
   get fullNameRule(): any[] {
     return [
       (v: string) => !!v || 'Full Name is required',
-      (v: string) => (!!v && v.length >= 3 && v.length <= 100) || 'Full Name should be between 3 and 100 characters'
+      (v: string) => (!!v && v.length >= 3 && v.length <= 80) || 'Full Name should be between 3 and 80 characters'
     ]
   }
 
