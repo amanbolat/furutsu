@@ -36,9 +36,7 @@ const actions = {
     Login(store: ActionContext<State, any>, credentials: any) {
         return new Promise((resolve, reject) => {
             Auth.login(credentials.username, credentials.password).then((response: any) => {
-                console.log("AUTH", response)
                 const usr = decodeJwtToken(response) as User
-                console.log(usr)
                 store.commit('SET_USER', usr)
                 store.commit('SET_AUTH_TOKEN', response)
 

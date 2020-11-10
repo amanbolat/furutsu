@@ -1,63 +1,23 @@
 <template lang="pug">
   v-container(fluid)
     v-row(v-if="showView" dense)
-      //v-col.mt-4
-        h3 Products without discounts
-      v-col(
+      v-col#NonDiscountSet(
         cols="12"
         v-if="cart.non_discount_set"
         v-for="(item, idx) in cart.non_discount_set"
         :key="'nd'+idx"
       )
-        v-card
-          v-card-text
-            v-row(dense).black--text.align-center
-              v-col(cols="12" md="5")
-                v-list-item
-                  v-list-item-avatar
-                    v-img(:src="`/img/${item.product.name}.jpg`")
-                  v-list-item-content
-                    v-list-item-title
-                      .text-capitalize {{ item.product.name }}
-                    v-list-item-subtitle
-                      | Price: {{ sumFromCents(item.product.price).toFixed(2)  }}$
-                      a-input-number.ml-5(:value="item.amount" :min="0" :step="1" size="small" @change="handleChangeItemAmount(item, $event)")
-              v-spacer
-              //v-col.d-flex
-
-              v-col.d-flex.justify-end.align-end.flex-column
-                span.body-1 Total:
-                span.body-1.font-weight-bold  {{ calcItemTotal(item).toFixed(2) }}$
-      //v-col.mt-4
-        h3 Products with discounts
-      v-col(
+        CartItem(:cart-item="item" :items="cart.items" @change-item-amount="handleChangeItemAmount")
+      v-col#SingleDiscountSet(
         cols="12"
         v-if="cart.discount_sets"
         v-for="(set, idx) in cart.discount_sets"
         :key="'d'+idx"
       )
-        v-card(
+        template(
           v-if="Object.entries(set).length === 1"
-          :_set="item = set[0]"
         )
-          v-card-text
-            v-row(dense).black--text.align-center
-              v-col(cols="12" md="5")
-                v-list-item
-                  v-list-item-avatar
-                    v-img(:src="`/img/${item.product.name}.jpg`")
-                  v-list-item-content
-                    v-list-item-title
-                      .text-capitalize {{ item.product.name }}
-                    v-list-item-subtitle
-                      | Price: {{ sumFromCents(item.product.price).toFixed(2)  }}$
-                    v-list-item-subtitle
-                      .red--text.font-weight-bold Discount: {{ item.discount_percent }}%
-              v-spacer
-              v-col.d-flex.justify-end.align-end.flex-column
-                span.body-1 Total:
-                span.body-1.text-decoration-line-through.grey--text.mr-1 {{ calcItemTotal(item).toFixed(2) }}$
-                span.body-1.font-weight-bold {{ calcItemDiscountedTotal(item).toFixed(2) }}$
+          CartItem(:cart-item="set[0]" :items="cart.items" @change-item-amount="handleChangeItemAmount")
         v-card(
           v-if="Object.entries(set).length > 1"
         )
@@ -67,13 +27,7 @@
                 v-list
                   template(v-for="(item, idx) in set")
                     v-subheader.red--text.font-weight-bold(v-if="idx === 0") {{ item.discount_percent }}% set discount
-                    v-list-item(:key="idx")
-                      v-list-item-avatar
-                        v-img(:src="`/img/${item.product.name}.jpg`")
-                      v-list-item-content
-                        v-list-item-subtitle.text-capitalize.black--text {{ item.product.name }}
-                        v-list-item-subtitle Price: {{ sumFromCents(item.product.price).toFixed(2) }}$
-                          a-input-number.ml-5(:value="item.amount" :min="0" :step="1" size="small" @change="handleChangeItemAmount(item, $event)")
+                    CartSetItem(:key="idx" :cart-item="item" :items="cart.items" @change-item-amount="handleChangeItemAmount")
                     v-divider(v-if="idx < Object.entries(set).length - 1")
               v-spacer
               v-col.d-flex.justify-end.align-end.flex-column
@@ -115,9 +69,13 @@ import {Component, Mixins} from 'vue-property-decorator'
 import api from '@/api/client'
 import sortCartItems from '@/utils/order_object_keys'
 import AppMixin from '@/mixins/AppMixin'
+import CartItem from '@/views/components/CartItem.vue'
+import CartSetItem from '@/views/components/CartSetItem.vue'
 import _debounce from 'lodash/debounce'
 
-@Component
+@Component({
+  components: {CartItem, CartSetItem}
+})
 export default class Cart extends Mixins(AppMixin) {
   private cart: any = null
   private couponCode = ''
@@ -133,25 +91,12 @@ export default class Cart extends Mixins(AppMixin) {
     return this.cart && Object.entries(this.cart.items).length > 0
   }
 
-  private handleChangeItemAmount(item: any, newAmount: number) {
-    // console.log(item)
-    // console.log(newAmount)
-    const amountDiff = newAmount - item.amount
-    const setAmount = this.cart.items[item.product.id].amount + amountDiff
-    item.amount = newAmount
-    //item.amount = JSON.parse(JSON.stringify(item.amount))
-    this.setCartItemAmount(item.product.id, setAmount)
-    // setTimeout(() => {
-    //   console.log('ADD ITEM')
-    //   // item.amount = newAmount
-    //
-    // }, 0)
-    //
-    // return _debounce(() => {
-    //   console.log('ADD ITEM')
-    // }, 1000)
-
+  private handleChangeItemAmount(obj: any) {
+    this.debouncedSetCartItemAmount(obj.item.product.id, obj.diff)
   }
+
+  private debouncedSetCartItemAmount = _debounce(this.setCartItemAmount, 500)
+
 
   public created() {
     this.getCart()

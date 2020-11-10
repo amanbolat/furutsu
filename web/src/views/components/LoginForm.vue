@@ -32,13 +32,15 @@
 </template>
 
 <script lang="ts">
-import {Component, Emit, Prop, Vue} from 'vue-property-decorator'
+import {Component, Emit, Mixins, Prop, Vue} from 'vue-property-decorator'
 import eventBus from '../../utils/event_bus'
+import store from '@/store'
+import AppMixin from '@/mixins/AppMixin'
 
 @Component({
   name: 'LoginForm',
 })
-export default class LoginForm extends Vue {
+export default class LoginForm extends Mixins(AppMixin) {
   private isLoading = false
   private loginForm = {
     username: '',
@@ -71,14 +73,9 @@ export default class LoginForm extends Vue {
       this.isLoading = true
       this.$store.dispatch('Login', this.loginForm).then(() => {
         this.isLoading = false
+        this.showMessage(`Welcome, ${store.getters.user ? store.getters.user.full_name : ''}!`)
         this.close()
         this.successLoginHandler()
-
-        // this.$router.push({path: '/'}
-        // ).catch((err) => {
-        //   return
-        // })
-
       }).catch((error: any) => {
         this.isLoading = false
         eventBus.$emit('app_error', error)

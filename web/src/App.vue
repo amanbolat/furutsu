@@ -96,9 +96,14 @@ export default class App extends Mixins(AppMixin) {
   }
 
   private logout() {
+    const fullName = store.getters.user ? store.getters.user.full_name : ''
     store.dispatch('Logout')
-    this.$router.push('/').catch(() => {
+    this.$router.push('/').then(() => {
+      console.log('logged out')
+    }).catch(() => {
       console.log('logged out with error')
+    }).then(() => {
+      this.showMessage(`Good luck, ${fullName}!`)
     })
   }
 

@@ -1,7 +1,7 @@
 <template lang="pug">
   v-card.w-100.elevation-3
     v-card-title
-      | Registration form
+      | Registration Form
     v-card-text
       v-form(ref="form" v-model="valid")
         v-text-field(
@@ -67,21 +67,21 @@ export default class RegistrationForm extends Mixins(AppMixin) {
   get usernameRules(): any[] {
     return [
       (v: string) => !!v || 'Username is required',
-      (v: string) => (!!v && v.length > 2) || 'Username should have more than 2 characters',
+      (v: string) => (!!v && v.length >= 3 && v.length <= 32) || 'Username should be between 3 and 32 characters',
   ]
   }
 
   get passwordRules(): any[] {
     return [
       (v: string) => !!v || 'Password is required',
-      (v: string) => (!!v && v.length > 2) || 'Password should have more than 2 characters',
+      (v: string) => (!!v && v.length >= 3 && v.length <= 32) || 'Password should be between 3 and 32 characters',
     ]
   }
 
   get fullNameRule(): any[] {
     return [
       (v: string) => !!v || 'Full Name is required',
-      (v: string) => (!!v && v.length > 2) || 'Full Name is too short'
+      (v: string) => (!!v && v.length >= 3 && v.length <= 100) || 'Full Name should be between 3 and 100 characters'
     ]
   }
 

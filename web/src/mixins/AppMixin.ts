@@ -16,7 +16,7 @@ export default class AppMixin extends Vue {
             title: 'Error',
             type: 'error',
             text: err.message + '.\n' + (err.hint ? err.hint : ''),
-            duration: 2000
+            duration: 3000
         })
     }
 
