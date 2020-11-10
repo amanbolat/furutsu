@@ -96,6 +96,7 @@ function getTokenExpirationDate(token: string): Date | null {
     return date
 }
 
+// eslint-disable-next-line
 function isTokenExpired(token: string, offsetSeconds?: number): boolean {
     if (token === null || token === '') {
         return true

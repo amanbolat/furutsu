@@ -122,7 +122,7 @@ func (s Service) ApplyCoupon(userId, couponCode string, ctx context.Context) (ca
 	}
 
 	ds := datastore.NewCartDataStore(tx)
-	c, err := ds.GetCartForUser(userId, ctx)
+	c, err := s.GetCart(userId, ctx)
 	if err != nil {
 		_ = tx.Rollback(ctx)
 		return cart.Cart{}, err
@@ -132,15 +132,22 @@ func (s Service) ApplyCoupon(userId, couponCode string, ctx context.Context) (ca
 	foundCoupon, err := discountDs.GetCoupon(couponCode, ctx)
 	if err != nil {
 		_ = tx.Rollback(ctx)
-		return cart.Cart{}, apperr.With(err, "couldn't find the coupon", "")
+		return cart.Cart{}, apperr.With(err, "coupon code is not valid", "")
 	}
-	if foundCoupon.IsExpired() || foundCoupon.IsUsed(c.Id) {
+	if foundCoupon.IsExpired() || foundCoupon.IsUsed() || !foundCoupon.IsAppliedToCart(c.Id) {
 		_ = tx.Rollback(ctx)
 		return cart.Cart{}, apperr.New("coupon code is not valid", "")
 	}
 
-	dItems, _ := foundCoupon.Rule.Check(c.Items)
-	if dItems == nil || len(dItems) < 1 {
+	// Check if there are items to which the coupon can be applied.
+	// Coupons for the same product CANNOT be stacked together.
+	dItems, _ := foundCoupon.Rule.Check(c.NonDiscountSetItems())
+	var discAppliedAmount int
+	for _, a := range dItems {
+		discAppliedAmount += a
+	}
+
+	if discAppliedAmount < 1 {
 		_ = tx.Rollback(ctx)
 		return cart.Cart{}, apperr.New("no items in the cart to which the coupon could be applied", "")
 	}

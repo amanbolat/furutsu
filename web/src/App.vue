@@ -1,5 +1,5 @@
 <template lang="pug">
-  v-app#inspire
+  v-app
     v-app-bar(app='' color='white' flat='')
       v-container.py-0.fill-height
         router-link(to="/")
@@ -9,37 +9,43 @@
           v-icon mdi-cart
         v-btn(icon color="orange darken-2" to="/order").mr-4
           v-icon mdi-shopping
-        v-dialog(v-if="!isAuthenticated" v-model="authDialog" width="500" persistent)
+        v-dialog(v-if="!isAuthenticated" v-model="loginDialog" width="500" persistent)
           template(v-slot:activator="{on, attrs}")
-            v-btn(v-if="!isAuthenticated" v-on="on" v-bind="attrs") Login
+            v-btn(v-if="!isAuthenticated" v-on="on" v-bind="attrs" color="indigo" dark) Login
           LoginForm(:success-login-handler="successLoginHandler" @close="closeLoginFormHandler")
+        v-dialog(v-if="!isAuthenticated" v-model="registerDialog" width="500" persistent)
+          template(v-slot:activator="{on, attrs}")
+            v-btn.ml-3(v-if="!isAuthenticated" v-on="on" v-bind="attrs") Sign up
+          RegistrationForm(:success-register-handler="successRegistrationHandler" @close="closeRegistrationFormHandler")
         v-btn(v-if="isAuthenticated" @click="logout") Logout
     v-main.grey.lighten-3
       v-container
         v-row
           v-col
             v-sheet.pa-5(min-height='70vh' rounded='lg')
-              router-view
-
-
+              transition(name="fade" mode="out-in")
+                router-view
+        notifications(group="notify" position="top left")
 </template>
 
 
 <script lang="ts">
-import Vue from 'vue'
 import eventBus from '@/utils/event_bus'
-import {Component} from 'vue-property-decorator'
+import {Component, Mixins} from 'vue-property-decorator'
 import {AppError} from '@/api/base'
 import store from './store'
-import LoginForm from './views/components/login_form.vue'
+import LoginForm from './views/components/LoginForm.vue'
+import RegistrationForm from './views/components/RegistrationForm.vue'
 import isFunc from 'lodash/isFunction'
+import AppMixin from '@/mixins/AppMixin'
 
 @Component({
   name: 'App',
-  components: {LoginForm}
+  components: {LoginForm, RegistrationForm}
 })
-export default class App extends Vue {
-  private authDialog = false
+export default class App extends Mixins(AppMixin) {
+  private loginDialog = false
+  private registerDialog = false
 
   get isAuthenticated() {
     return store.getters.isAuthenticated
@@ -56,7 +62,7 @@ export default class App extends Vue {
     })
     this.beforeSuccessLogin = []
     this.afterLoginRefused = []
-    this.authDialog = false
+    this.loginDialog = false
   }
 
   public closeLoginFormHandler() {
@@ -66,7 +72,15 @@ export default class App extends Vue {
       }
     })
     this.afterLoginRefused = []
-    this.authDialog = false
+    this.loginDialog = false
+  }
+
+  private successRegistrationHandler() {
+    this.registerDialog = false
+  }
+
+  private closeRegistrationFormHandler() {
+    this.registerDialog = false
   }
 
   public created() {
@@ -89,7 +103,7 @@ export default class App extends Vue {
   }
 
   private handlePromptAuth(handler: () => void) {
-    this.$set(this, 'authDialog', true)
+    this.$set(this, 'loginDialog', true)
     this.beforeSuccessLogin.push(handler)
 
     this.afterLoginRefused.push(() => {
@@ -99,36 +113,33 @@ export default class App extends Vue {
     })
   }
 
-  private handleUnauthorizedRequest() {
+  private handleUnauthorizedRequest(wasAuthorized: boolean) {
+    let title = 'Not logged in'
+    if (wasAuthorized) {
+      title = 'Your session has expired'
+    }
     this.$notify({
-      title: 'Unauthorized',
-      message: 'Please sign in'
+      group: 'notify',
+      title: title,
+      type: 'warn',
+      text: 'Please sign in',
+      duration: 2000
     })
-    this.$set(this, 'authDialog', true)
+    this.$set(this, 'loginDialog', true)
 
     this.beforeSuccessLogin.push(() =>{
       this.$router.go(0)
     })
 
     this.afterLoginRefused.push(() => {
-      this.$router.push('/')
+      this.$router.push('/').catch(() => {
+        console.log('handled login refuse with error')
+      })
     })
   }
 
   private handleAppError(error: AppError) {
-    console.log('APP ERR')
-
-    let err = {} as AppError
-    if (!error.message) {
-      err.message = 'Unknown error'
-    } else {
-      err = error
-    }
-    this.$notify({
-      title: err.message,
-      message: err.hint,
-      type: 'error',
-    })
+    this.showError(error)
   }
 }
 </script>

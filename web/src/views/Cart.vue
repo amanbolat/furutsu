@@ -1,7 +1,7 @@
 <template lang="pug">
   v-container(fluid)
     v-row(v-if="showView" dense)
-      v-col.mt-4
+      //v-col.mt-4
         h3 Products without discounts
       v-col(
         cols="12"
@@ -21,14 +21,14 @@
                       .text-capitalize {{ item.product.name }}
                     v-list-item-subtitle
                       | Price: {{ sumFromCents(item.product.price).toFixed(2)  }}$
-                      el-input-number.ml-5(:value="item.amount" :min="0" :step="1" size="small" @change="handleChangeItemAmount(item, $event)")
+                      a-input-number.ml-5(:value="item.amount" :min="0" :step="1" size="small" @change="handleChangeItemAmount(item, $event)")
               v-spacer
               //v-col.d-flex
 
               v-col.d-flex.justify-end.align-end.flex-column
                 span.body-1 Total:
                 span.body-1.font-weight-bold  {{ calcItemTotal(item).toFixed(2) }}$
-      v-col.mt-4
+      //v-col.mt-4
         h3 Products with discounts
       v-col(
         cols="12"
@@ -73,7 +73,7 @@
                       v-list-item-content
                         v-list-item-subtitle.text-capitalize.black--text {{ item.product.name }}
                         v-list-item-subtitle Price: {{ sumFromCents(item.product.price).toFixed(2) }}$
-                          el-input-number.ml-5(:value="item.amount" :min="0" :step="1" size="small" @change="handleChangeItemAmount(item, $event)")
+                          a-input-number.ml-5(:value="item.amount" :min="0" :step="1" size="small" @change="handleChangeItemAmount(item, $event)")
                     v-divider(v-if="idx < Object.entries(set).length - 1")
               v-spacer
               v-col.d-flex.justify-end.align-end.flex-column
@@ -111,10 +111,11 @@
 </template>
 
 <script lang="ts">
-import {Component, Mixins, Vue} from 'vue-property-decorator'
+import {Component, Mixins} from 'vue-property-decorator'
 import api from '@/api/client'
 import sortCartItems from '@/utils/order_object_keys'
 import AppMixin from '@/mixins/AppMixin'
+import _debounce from 'lodash/debounce'
 
 @Component
 export default class Cart extends Mixins(AppMixin) {
@@ -133,13 +134,23 @@ export default class Cart extends Mixins(AppMixin) {
   }
 
   private handleChangeItemAmount(item: any, newAmount: number) {
-    console.log(item)
-    console.log(newAmount)
+    // console.log(item)
+    // console.log(newAmount)
     const amountDiff = newAmount - item.amount
     const setAmount = this.cart.items[item.product.id].amount + amountDiff
     item.amount = newAmount
-
+    //item.amount = JSON.parse(JSON.stringify(item.amount))
     this.setCartItemAmount(item.product.id, setAmount)
+    // setTimeout(() => {
+    //   console.log('ADD ITEM')
+    //   // item.amount = newAmount
+    //
+    // }, 0)
+    //
+    // return _debounce(() => {
+    //   console.log('ADD ITEM')
+    // }, 1000)
+
   }
 
   public created() {

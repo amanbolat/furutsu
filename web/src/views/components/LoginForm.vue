@@ -38,7 +38,7 @@ import eventBus from '../../utils/event_bus'
 @Component({
   name: 'LoginForm',
 })
-export default class Login extends Vue {
+export default class LoginForm extends Vue {
   private isLoading = false
   private loginForm = {
     username: '',

@@ -141,14 +141,20 @@ VALUES ($1, $2, $3, $4, $5) RETURNING *`, item.ProductName, item.ProductDescript
 }
 
 func (d OrderDataStore) UpdateOrderStatus(orderId string, status order.Status, ctx context.Context) error {
-	rows, err := d.querier.Query(ctx, `UPDATE "order" SET status = $1 WHERE id = $2 AND status <> $1`, status, orderId)
+	rows, err := d.querier.Query(ctx, `UPDATE "order" SET status = $1 WHERE id = $2 AND status <> $1 RETURNING *`, status, orderId)
+
 	if err != nil {
 		return err
 	}
-	defer rows.Close()
-	if rows.CommandTag().RowsAffected() == 0 {
+	var dbOrder DbOrder
+	err = pgxscan.ScanOne(&dbOrder, rows)
+	if err != nil {
+		return err
+	}
+	if (dbOrder == DbOrder{}) {
 		return ErrNoRecords
 	}
+	defer rows.Close()
 
 	return nil
 }

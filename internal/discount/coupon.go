@@ -35,6 +35,10 @@ func (c Coupon) IsExpired() bool {
 	return c.Expire.Before(time.Now())
 }
 
-func (c Coupon) IsUsed(cartId string) bool {
-	return c.CartId != cartId || c.OrderId != ""
+func (c Coupon) IsAppliedToCart(cartId string) bool {
+	return c.CartId == "" || c.CartId == cartId
+}
+
+func (c Coupon) IsUsed() bool {
+	return c.OrderId != ""
 }

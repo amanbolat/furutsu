@@ -14,7 +14,7 @@
                 v-btn(color='orange darken-2' text v-on="on" v-bind="attrs") Add to cart
               v-card
                 v-card-text.d-flex.justify-center
-                  el-input-number(v-model="addToCartAmount" :min="0" :step="1")
+                  a-input-number(v-model="addToCartAmount" :min="0" :step="1")
                 v-card-actions
                   v-btn(@click="addProductToCart(item, addToCartAmount)") Add
             v-spacer
@@ -30,7 +30,6 @@
 <script lang="ts">
 import {Component, Mixins} from 'vue-property-decorator'
 import api from '@/api/client'
-import eventBus from '@/utils/event_bus'
 import AppMixin from '@/mixins/AppMixin'
 
 @Component

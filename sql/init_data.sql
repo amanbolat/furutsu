@@ -26,6 +26,11 @@ VALUES ('orange123', 'orange 10%', '2021-11-06 15:30:31.542000', '{
   "e7f83943-7044-4406-9d32-9b229725f6d0": 0
 }', 30);
 
+INSERT INTO public.coupon (code, name, expire_at, rule, discount_percent)
+VALUES ('orange222', 'orange 10%', '2021-11-06 15:30:31.542000', '{
+  "e7f83943-7044-4406-9d32-9b229725f6d0": 0
+}', 30);
+
 
 -- User and its cart
 INSERT INTO public.user (username, full_name, password)

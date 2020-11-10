@@ -38,7 +38,7 @@ func (req PayForTheOrderRequest) Validate() error {
 func (s Service) PayForTheOrder(req PayForTheOrderRequest, ctx context.Context) error {
 	err := req.Validate()
 	if err != nil {
-		return apperr.With(err, "payment could not been proceeded", "try later")
+		return apperr.With(err, "your payment was rejected", "")
 	}
 
 	ordSrv := ordersrv.NewService(s.repo)

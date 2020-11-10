@@ -30,7 +30,8 @@ type Coupon interface {
 	GetCode() string
 	GetExpireTime() time.Time
 	IsExpired() bool
-	IsUsed(cartId string) bool
+	IsUsed() bool
+	IsAppliedToCart(cartId string) bool
 }
 
 type Alias Cart
@@ -163,4 +164,18 @@ func (c *Cart) SetProductAmount(p product.Product, amount int) {
 	}
 
 	c.Items[p.ID] = il
+}
+
+func (c *Cart) NonDiscountSetItems() map[string]Item {
+	m := make(map[string]Item)
+
+	for k, v := range c.NonDiscountSet.Set {
+		p := c.Items[k].Product
+		m[k] = Item{
+			Product: p,
+			Amount:  v,
+		}
+	}
+
+	return m
 }

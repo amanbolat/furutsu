@@ -2,7 +2,6 @@ package ordersrv
 
 import (
 	"context"
-	"errors"
 	"github.com/amanbolat/furutsu/internal/apperr"
 
 	"github.com/amanbolat/furutsu/datastore"
@@ -57,7 +56,7 @@ func (s Service) CreateOrder(userId string, ctx context.Context) (order.Order, e
 
 	// Check coupons
 	for _, coupon := range c.Coupons {
-		if coupon.IsUsed(c.Id) || coupon.IsExpired() {
+		if coupon.IsUsed() || coupon.IsExpired() || !coupon.IsAppliedToCart(c.Id) {
 			_ = tx.Rollback(ctx)
 			return order.Order{}, apperr.New("some coupons are already invalid", "please checkout the cart again")
 		}
@@ -121,12 +120,19 @@ func (s Service) CreateOrder(userId string, ctx context.Context) (order.Order, e
 }
 
 func (s Service) UpdateOrderStatus(orderId string, status order.Status, ctx context.Context) error {
-	ds := datastore.NewOrderDataStore(s.repo)
-	err := ds.UpdateOrderStatus(orderId, status, ctx)
-	if errors.Is(err, datastore.ErrNoRecords) {
-		return apperr.New("order was already has been paid", "")
+	tx, err := s.repo.Begin(ctx)
+	if err != nil {
+		return err
 	}
 
+	ds := datastore.NewOrderDataStore(tx)
+	err = ds.UpdateOrderStatus(orderId, status, ctx)
+	if err != nil {
+		_ = tx.Rollback(ctx)
+		return apperr.New("order has already been paid", "")
+	}
+
+	err = tx.Commit(ctx)
 	if err != nil {
 		return err
 	}

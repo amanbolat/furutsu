@@ -19,11 +19,13 @@
 </template>
 
 <script lang="ts">
-import {Component, Mixins, Vue} from 'vue-property-decorator'
+import {Component, Mixins} from 'vue-property-decorator'
 import api from '@/api/client'
 import AppMixin from '@/mixins/AppMixin'
 
-@Component
+@Component({
+  name: 'PaymentForm'
+})
 export default class PaymentForm extends Mixins(AppMixin) {
   private orderId = ''
   private validForm = false
@@ -56,9 +58,11 @@ export default class PaymentForm extends Mixins(AppMixin) {
       holder: this.cardData.holder
     }).then(() => {
       this.showMessage('Payment succeed!')
-      this.$router.push('/order')
-    }).catch(() => {
-      this.showError({message: 'Payment failed', hint: 'Your payment was rejected'})
+      this.$router.push('/order').catch((err) => {
+        console.log('failed push to order route after payment', err)
+      })
+    }).catch((err) => {
+      this.showError(err)
     })
   }
 }

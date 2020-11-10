@@ -18,6 +18,11 @@
             .font-weight-bold {{ sumFromCents(item.total_for_payment).toFixed(2) }} $
           template(v-slot:item.action="{ item }")
             v-btn(v-if="item.status === 'pending'" dark color="orange darken-2" :to="{name: 'PaymentForm', params: {order_id: item.id}}") Pay
+    v-row(v-else)
+      v-col.d-flex.align-center.flex-column
+        h2 You have no orders yet.
+        span You can add products to your cart then checkout them.
+        span All you orders will be here!
 </template>
 
 <script lang="ts">

@@ -50,7 +50,7 @@ const actions = {
     },
 
     Logout(store: ActionContext<State, any>) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             store.commit('DEL_AUTH_TOKEN', '')
             store.commit('SET_USER', {})
             resolve()

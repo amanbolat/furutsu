@@ -78,7 +78,7 @@ func (s Service) Register(u user.User, ctx context.Context) error {
 	createdUser, err := ds.CreateUser(u, ctx)
 	if err != nil {
 		_ = tx.Rollback(ctx)
-		return err
+		return apperr.With(err, "User with this username does already exist", "")
 	}
 
 	cartDs := datastore.NewCartDataStore(tx)

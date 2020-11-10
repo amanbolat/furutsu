@@ -12,18 +12,21 @@ export default class AppMixin extends Vue {
             err = error
         }
         this.$notify({
+            group: 'notify',
             title: 'Error',
-            message: err.message + '.\n' + err.hint,
             type: 'error',
+            text: err.message + '.\n' + (err.hint ? err.hint : ''),
             duration: 2000
         })
     }
 
     public showMessage(message: string) {
         this.$notify({
-            title: `Success`,
-            message: message,
-            duration: 1500,
+            group: 'notify',
+            title: 'Success',
+            type: 'success',
+            text: message,
+            duration: 3500
         })
     }
 
