@@ -1,5 +1,7 @@
 <template lang="pug">
   v-card(v-if="item && item.product")
+    v-btn(icon @click="deleteItem(item)").delete-item-btn
+      v-icon(color="red") mdi-trash-can-outline
     v-card-text
       v-row(dense).black--text.align-center
         v-col(cols="12" md="5")
@@ -8,22 +10,33 @@
               v-img(:src="`/img/${item.product.name}.jpg`")
             v-list-item-content
               v-list-item-title
-                .text-capitalize {{ item.product.name }}
+                .text-capitalize.item-name {{ item.product.name }}
               v-list-item-subtitle
-                | Price: {{ sumFromCents(item.product.price).toFixed(2)  }}$
-                a-input-number.ml-5(:value="item.amount" :min="0" :step="1" size="small" @change="changeItemAmount(item, $event)")
+                span.black--text Price: {{ sumFromCents(item.product.price).toFixed(2)  }}$
+                v-edit-dialog.mt-2(
+                  :return-value.sync="item"
+                  large
+                  @open="openAmountDialog"
+                  @save="saveAmountDialog"
+                  @close="closeAmountDialog"
+                  @cancel="closeAmountDialog")
+                  .black--text.font-weight-bold.mr-2.amount-text.d-flex Amount: {{ item.amount }}
+                    v-icon.ml-1(small) mdi-square-edit-outline
+                  template(v-slot:input)
+                    a-input-number(:disabled="loading" :value="item.amount" :min="1" :step="1" @change="handleAmountChange(item, $event)")
               v-list-item-subtitle(v-if="item.discount_percent")
                 .red--text.font-weight-bold Discount: {{ item.discount_percent }}%
         v-spacer
         v-col.d-flex.justify-end.align-end.flex-column
           span.body-1 Total:
-          span.body-1.text-decoration-line-through.grey--text.mr-1(v-if="item.discount_percent") {{ calcItemTotal(item).toFixed(2) }}$
-          span.body-1.font-weight-bold {{ calcItemDiscountedTotal(item).toFixed(2) }}$
+          span.body-1.text-decoration-line-through.grey--text.mr-1(v-if="cartItem.discount_percent") {{ calcItemTotal(cartItem).toFixed(2) }}$
+          span.body-1.font-weight-bold {{ calcItemDiscountedTotal(cartItem).toFixed(2) }}$
 </template>
 
 <script lang="ts">
-import {Component, Emit, Mixins, Prop, Watch, PropSync} from 'vue-property-decorator'
-import AppMixin from '../../mixins/AppMixin'
+import {Component, Emit, Mixins, Prop, PropSync, Watch} from 'vue-property-decorator'
+import _isNumber from 'lodash/isNumber'
+import AppMixin from '@/mixins/AppMixin'
 
 @Component({
   name: 'CartItem',
@@ -31,7 +44,9 @@ import AppMixin from '../../mixins/AppMixin'
 export default class CartItem extends Mixins(AppMixin) {
   @Prop(Object) public cartItem!: any
   @PropSync('items', {type: Object}) public cartItems!: any[]
-  private item = {}
+  @PropSync('isLoading', {type: Boolean}) public loading!: any[]
+  public item: any = {}
+  public amountSaved = false
 
   @Watch('cartItem')
   onCartItemChange(val: any) {
@@ -41,7 +56,7 @@ export default class CartItem extends Mixins(AppMixin) {
     this.item = JSON.parse(JSON.stringify(val))
   }
 
-  private created() {
+  public created() {
     if (!this.cartItem) {
       return
     }
@@ -49,11 +64,43 @@ export default class CartItem extends Mixins(AppMixin) {
   }
 
   @Emit()
-  public changeItemAmount(item: any, amount: number) {
-    const diff = this.cartItems[item.product.id].amount + (amount - this.cartItem.amount)
-    item.amount = amount
+  private deleteItem(item: any) {
+    return item
+  }
 
-    return {item, diff}
+  @Emit()
+  public changeItemAmount(item: any, amount: number) {
+    return {item, amount}
+  }
+
+  public handleAmountChange(item: any, amount: number) {
+    if (!_isNumber(amount)) {
+      return
+    }
+    if (amount < 1) {
+      return
+    }
+    item.amount = amount
+  }
+
+  private openAmountDialog() {
+    this.amountSaved = false
+  }
+
+  private closeAmountDialog() {
+    if (this.amountSaved) {
+      return
+    }
+    this.item.amount = this.cartItem.amount
+  }
+
+  private saveAmountDialog() {
+    if (this.item.amount === this.cartItem.amount) {
+      return
+    }
+    const diff = this.cartItems[this.item.product.id].amount + (this.item.amount - this.cartItem.amount)
+    this.changeItemAmount(this.item, diff)
+    this.amountSaved = true
   }
 
   private calcItemTotal(item: any): number {
@@ -67,3 +114,41 @@ export default class CartItem extends Mixins(AppMixin) {
   }
 }
 </script>
+
+<style lang="scss">
+.item-name {
+  font-size: 1.3em;
+}
+
+.v-small-dialog__activator {
+  padding: 2px 0;
+}
+
+.amount-text {
+  font-size: 1.1em;
+
+  &:hover {
+    border: thin dotted;
+  }
+}
+
+.v-small-dialog__menu-content {
+  padding-top: 10px;
+
+  .v-small-dialog__content {
+    display: flex;
+    justify-content: center;
+  }
+
+  .v-small-dialog__actions {
+    display: flex;
+    justify-content: center;
+  }
+}
+
+.delete-item-btn {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+}
+</style>

@@ -7,7 +7,7 @@
         v-for="(item, idx) in cart.non_discount_set"
         :key="'nd'+idx"
       )
-        CartItem(:cart-item="item" :items="cart.items" @change-item-amount="handleChangeItemAmount")
+        CartItem(:is-loading="loading" :cart-item="item" @delete-item="handleDeleteItem" :items="cart.items" @change-item-amount="handleChangeItemAmount")
       v-col#SingleDiscountSet(
         cols="12"
         v-if="cart.discount_sets"
@@ -17,7 +17,7 @@
         template(
           v-if="Object.entries(set).length === 1"
         )
-          CartItem(:cart-item="set[0]" :items="cart.items" @change-item-amount="handleChangeItemAmount")
+          CartItem(:is-loading="loading" :cart-item="set[0]" @delete-item="handleDeleteItem" :items="cart.items" @change-item-amount="handleChangeItemAmount")
         v-card(
           v-if="Object.entries(set).length > 1"
         )
@@ -27,7 +27,7 @@
                 v-list
                   template(v-for="(item, idx) in set")
                     v-subheader.red--text.font-weight-bold(v-if="idx === 0") {{ item.discount_percent }}% set discount
-                    CartSetItem(:key="idx" :cart-item="item" :items="cart.items" @change-item-amount="handleChangeItemAmount")
+                    CartSetItem(:key="idx" :is-loading="loading" :cart-item="item" @delete-item="handleDeleteItem" :items="cart.items" @change-item-amount="handleChangeItemAmount")
                     v-divider(v-if="idx < Object.entries(set).length - 1")
               v-spacer
               v-col.d-flex.justify-end.align-end.flex-column
@@ -81,6 +81,7 @@ import _debounce from 'lodash/debounce'
 export default class Cart extends Mixins(AppMixin) {
   private cart: any = null
   private couponCode = ''
+  private loading = false
 
   private couponsTableHeaders = [
     {text: 'Code', value: 'code'},
@@ -94,12 +95,24 @@ export default class Cart extends Mixins(AppMixin) {
     return this.cart && Object.entries(this.cart.items).length > 0
   }
 
-  private handleChangeItemAmount(obj: any) {
-    this.debouncedSetCartItemAmount(obj.item.product.id, obj.diff)
+  private handleDeleteItem(item: any) {
+    if (item) {
+      this.setCartItemAmount(item.product.id, 0)
+    }
   }
 
-  private debouncedSetCartItemAmount = _debounce(this.setCartItemAmount, 500)
+  private handleChangeItemAmount(obj: any) {
+    if (obj && obj.item) {
+      console.log('handleChangeItemAmount', obj)
+      this.debouncedSetCartItemAmount(obj.item.product.id, obj.amount)
+    }
+  }
 
+  private debouncedSetCartItemAmount = _debounce(this.setCartItemAmount, 100)
+
+  private tt(id: string, amount: number) {
+    console.log('TT', id, amount)
+  }
 
   public created() {
     this.getCart()
@@ -149,6 +162,8 @@ export default class Cart extends Mixins(AppMixin) {
   }
 
   private setCartItemAmount(productId: string, amount: number) {
+    this.loading = true
+
     api.post('/cart/product', {
       product_id: productId,
       amount: amount
@@ -156,14 +171,20 @@ export default class Cart extends Mixins(AppMixin) {
       this.handleGetCartResponse(response)
     }).catch((err) => {
       this.showError(err)
+    }).then(() => {
+      this.loading = false
     })
   }
 
   private getCart() {
+    this.loading = true
+
     api.get('/cart').then((response) => {
       this.handleGetCartResponse(response)
     }).catch((err) => {
       this.showError(err)
+    }).then(() => {
+      this.loading = false
     })
   }
 
