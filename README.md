@@ -2,7 +2,46 @@
 ![Logo](https://github.com/amanbolat/furutsu/raw/master/web/public/logo.png)
 
 ## About
-This is the project developed by me as a homework assessment for the technical interview, which include creating the ac
+This is the project developed by me as a homework assessment for the technical interview.
+
+## Task
+Develop an online eCommerce store selling fruit, which contains the following features:
+
+- Simple sign-up and login form.
+- Browse the following products
+    1. Apples
+    2. Bananas
+    3. Pears
+    4. Oranges
+- Add items to your cart
+- Adjust quantity.
+- Delete items from the cart.
+- Apply coupons.
+- Checkout your cart.
+
+Mocked purchase (a payment gateway is not required, but a route must exist in the backend validating the payment).
+An address does not need to be entered.
+
+## Requirements
+**Architecture diagrams.**
+Single-page frontend app (cannot use an existing online stores such as Prestashop).
+Backend RESTful web service written in GoLang.
+Users must be able to return to their cart after closing the browser, and see the previous items that were added.
+
+## Cart Rules
+If 7 or more apples are added to the cart, a 10% discount is applied to all apples.
+For each set of 4 pears and 2 bananas, a 30% discount is applied, to each set.
+These sets must be added to their own cart item entry.
+If pears or bananas already exist in the cart, this discount must be recalculated when new pears or bananas are added.
+
+A coupon code can be used to get a 30% discount on oranges, if applied to the cart, otherwise oranges are full price.
+**Can only be applied once.**
+Has an configurable expiry timeout (10 seconds for testing purposes) once generated.
+
+### The following totals must be shown:
+Total price.
+Total savings.
+
 
 ## TODO
 Like every project there are no limits in improvement. This is the list of features and improvements that I would add
@@ -80,3 +119,9 @@ the implementation of such a logic simpler, but it might create a few problems i
 coupons to the cart items, thus the discount and coupon discount would be used together or, again, as I said before the 
 customer can choose one of the variants, if simple discounts and coupons shouldn't be used together due to business requirements.
 
+5. Checkout the items. Usually only very small website and online shops use the logic of checking out the items from cart
+and immediately go to the payment form. However, order history is vital for real e-commerce shops. It is not only necessary
+for the accounting, but also is convenient for the user. Having the history of all his order enables the business:
+- To get more data and recommend particular items in the future.
+- To have a metrics and quickly response to the new requirements.
+- To foresee the future markets.
