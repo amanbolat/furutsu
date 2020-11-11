@@ -1,5 +1,5 @@
 # Furutsu - an online shop for selling fruits
-![Logo](https://github.com/amanbolat/furutsu/web/public/logo.png)
+![Logo](https://github.com/amanbolat/furutsu/raw/master/web/public/logo.png)
 
 ## About
 This is the project developed by me as a homework assessment for the technical interview, which include creating the ac
@@ -35,7 +35,7 @@ the password.
 
 ### Code
 - [ ] Clean it
-
+- [ ] Put frontend part of the project to separate repo 
 
 ## Questions and Suggestions
 
