@@ -5,7 +5,7 @@
 This is the project developed by me as a homework assessment for the technical interview.
 
 ## How to run
-###Option 1
+### Option 1
 - `git clone https://github.com/amanbolat/furutsu`
 - `make dc.run`
 - `make init.data`
