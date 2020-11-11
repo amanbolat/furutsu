@@ -12,6 +12,40 @@ services:
       POSTGRES_DB: furutsu
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-    volumes:
-      - "./.pgdata:/var/lib/postgresql/data"
-  furutsu_service:
+    networks:
+      - furutsu_network
+  furutsu_server:
+    build:
+      context: ./server
+    container_name: furutsu_server
+    command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; ./bin/appexe'
+    environment:
+      PORT: 9033
+      DB_CONN_STRING: postgres://postgres:postgres@furutsu_db:5432/furutsu?sslmode=disable
+      MIGRATES_DIR: /migrates
+    ports:
+      - "9033:9033"
+    links:
+      - furutsu_db
+    depends_on:
+      - furutsu_db
+    networks:
+      - furutsu_network
+  furutsu_spa:
+    build:
+      context: ./web
+      args:
+        server_url: http://localhost:9033/
+    container_name: furutsu_spa
+    ports:
+      - "8080:80"
+    links:
+      - furutsu_server
+    depends_on:
+      - furutsu_server
+    networks:
+      - furutsu_network
+
+networks:
+  furutsu_network:
+    name: furutsu_network

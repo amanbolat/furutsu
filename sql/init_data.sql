@@ -22,37 +22,29 @@ VALUES ('set of 4 pears, 2 bananas 30%', '{
 
 -- Coupons
 INSERT INTO public.coupon (code, name, expire_at, rule, discount_percent)
-VALUES ('orange555', 'Orange 30% discount coupon', '2021-11-06 15:30:31.542000', '{
+VALUES ('orange333', 'Orange 30% discount coupon 1', '2021-11-06 15:30:31.542000', '{
   "e7f83943-7044-4406-9d32-9b229725f6d0": 0
 }', 30);
 
 INSERT INTO public.coupon (code, name, expire_at, rule, discount_percent)
-VALUES ('123123', 'Orange 30% discount coupon', '2021-11-06 15:30:31.542000', '{
+VALUES ('orange777', 'Orange 30% discount coupon 2', '2021-11-06 15:30:31.542000', '{
   "e7f83943-7044-4406-9d32-9b229725f6d0": 0
 }', 30);
 
+INSERT INTO public.coupon (code, name, expire_at, rule, discount_percent)
+VALUES ('orange888', 'Expired orange 30% discount coupon', '2019-11-06 15:30:31.542000', '{
+  "e7f83943-7044-4406-9d32-9b229725f6d0": 0
+}', 30);
 
 -- User and its cart
 INSERT INTO public.user (username, full_name, password)
-VALUES ('aman', 'Amanbolat', 'pass');
+VALUES ('test', 'Test User', 'pass');
 WITH u AS (
     SELECT id
     FROM "user"
-    WHERE username = 'aman'
+    WHERE username = 'test'
 )
 INSERT
 INTO cart (user_id)
 SELECT id
 FROM u;
-
--- User cart items
-WITH tmp AS (
-    SELECT cart.id as id
-    FROM cart
-    JOIN "user" u ON u.id = cart.user_id
-    WHERE u.username = 'aman'
-)
-INSERT INTO cart_item (cart_id, product_id, amount)
-SELECT id, '0645a967-badb-40d2-89fb-81c7b745899c', 20
-FROM tmp;
-

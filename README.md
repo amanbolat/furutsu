@@ -4,8 +4,21 @@
 ## About
 This is the project developed by me as a homework assessment for the technical interview.
 
+## How to run
+- `git clone https://github.com/amanbolat/furutsu`
+- `make dc.run`
+- `make init.data`
+- Open browser and go to `localhost:8080`
+- Register new user
+- Sign in
+
+A few coupons will be inserted after `init.data`:
+- orange333
+- orange777
+- orange888
+
 ## Task
-Develop an online eCommerce store selling fruit, which contains the following features:
+Develop an online e-commerce store for selling fruits, which contains the following features:
 
 - Simple sign-up and login form.
 - Browse the following products
@@ -22,21 +35,20 @@ Develop an online eCommerce store selling fruit, which contains the following fe
 Mocked purchase (a payment gateway is not required, but a route must exist in the backend validating the payment).
 An address does not need to be entered.
 
-## Requirements
-**Architecture diagrams.**
-Single-page frontend app (cannot use an existing online stores such as Prestashop).
-Backend RESTful web service written in GoLang.
-Users must be able to return to their cart after closing the browser, and see the previous items that were added.
+### Requirements
+- Architecture diagrams.
+- Single-page frontend app (cannot use an existing online stores such as Prestashop).
+- Backend RESTful web service written in GoLang.
+- Users must be able to return to their cart after closing the browser, and see the previous items that were added.
 
-## Cart Rules
-If 7 or more apples are added to the cart, a 10% discount is applied to all apples.
-For each set of 4 pears and 2 bananas, a 30% discount is applied, to each set.
-These sets must be added to their own cart item entry.
-If pears or bananas already exist in the cart, this discount must be recalculated when new pears or bananas are added.
-
-A coupon code can be used to get a 30% discount on oranges, if applied to the cart, otherwise oranges are full price.
-**Can only be applied once.**
-Has an configurable expiry timeout (10 seconds for testing purposes) once generated.
+### Cart Rules
+- If 7 or more apples are added to the cart, a 10% discount is applied to all apples.
+- For each set of 4 pears and 2 bananas, a 30% discount is applied, to each set.
+- These sets must be added to their own cart item entry.
+- If pears or bananas already exist in the cart, this discount must be recalculated when new pears or bananas are added.
+- A coupon code can be used to get a 30% discount on oranges, if applied to the cart, otherwise oranges are full price.
+- A coupon can only be applied once.
+- It has a configurable expiry timeout (10 seconds for testing purposes) once generated.
 
 ### The following totals must be shown:
 Total price.
