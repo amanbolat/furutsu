@@ -27,7 +27,14 @@ There are some examples of good implementation of similar logic. Chinese e-comme
 such as `Taobao` and `JD.com` have more complex discount system and leave the choice to customers. They 
 provide `% discounts`, `set discounts`, `minimum order discounts` and customers may choose them by themselves.
 
-2. Given cart rules about discounts would seem to be a little vague. 
+2. Adding the set of items has also affected the functionality of quantity adjustment. If we add or remove items from the
+set it changes the quantity of that particular product in the cart, BUT what about removing the item? Should we remove all
+the items of this kind or remove only the exact quantity of the product in the set?
+Currently, when user presses the DELETE button all the items of this kind will be removed from the cart.
+
+Suggestion: reconsider the idea of the set. See question #1.   
+
+3. Given cart rules about discounts would seem to be a little vague. 
 
 Questions: 
 - Discounts intersection. What if two or more discounts are applicable to the same set of items?
@@ -37,7 +44,7 @@ My thoughts:
 As I mentioned before giving the choice to the customer is the best option. However, it might depend on the real world
 business requirements. Anyway I would be grateful to have a chance to discuss that question, just for curiosity.
 
-3. Logic of the coupon is not very clear. It seems, that coupons should be generated somehow and everyone who has a code
+4. Logic of the coupon is not very clear. It seems, that coupons should be generated somehow and everyone who has a code
 can use them. Also, it is claimed to be applied to the cart, but not the item cart which seems to me as a bad logic. Indeed, 
 the implementation of such a logic simpler, but it might create a few problems in long term. In my opinion, we could attach
 coupons to the cart items, thus the discount and coupon discount would be used together or, again, as I said before the 

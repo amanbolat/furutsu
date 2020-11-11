@@ -117,35 +117,22 @@ func (s Service) SetItemAmount(productId, userId string, amount int, ctx context
 	}
 
 	_, err = ds.GetCartItem(userCart.Id, productId, ctx)
-	// If no cart item found we should create a new one,
-	// so ErrNoRecords hasn't to be returned
-	if err != nil && !errors.Is(err, datastore.ErrNoRecords) {
+	if err != nil {
 		_ = tx.Rollback(ctx)
 		return cart.Cart{}, err
 	}
 
-	// Create item if there isn't any
-	if errors.Is(err, datastore.ErrNoRecords) {
-		err = ds.CreateCartItem(userCart.Id, productId, amount, ctx)
+	if amount < 1 {
+		err = ds.DeleteCartItem(userCart.Id, productId, ctx)
 		if err != nil {
 			_ = tx.Rollback(ctx)
 			return cart.Cart{}, err
 		}
-		// Delete item if amount argument is less than 1
 	} else {
-		if amount < 1 {
-			err = ds.DeleteCartItem(userCart.Id, productId, ctx)
-			if err != nil {
-				_ = tx.Rollback(ctx)
-				return cart.Cart{}, err
-			}
-			// Set new amount
-		} else {
-			err = ds.SetCartItemAmount(userCart.Id, productId, amount, ctx)
-			if err != nil {
-				_ = tx.Rollback(ctx)
-				return cart.Cart{}, err
-			}
+		err = ds.SetCartItemAmount(userCart.Id, productId, amount, ctx)
+		if err != nil {
+			_ = tx.Rollback(ctx)
+			return cart.Cart{}, err
 		}
 	}
 
