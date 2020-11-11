@@ -1,10 +1,40 @@
 # Furutsu - an online shop for selling fruits
+![Logo](https://github.com/amanbolat/furutsu/web/public/logo.png)
 
 ## About
 This is the project developed by me as a homework assessment for the technical interview, which include creating the ac
 
 ## TODO
 Like every project there are no limits in improvement. This is the list of features and improvements that I would add
+
+### Tests
+- [ ] Add e2e tests.
+- [ ] Add CI/CD workflow for test automation.
+- [ ] Add some edge cases to the unit tests. Such as discounts for the same product.
+
+### Security. Authorization & Authentication
+- [ ] Implement password `service` to check the strength of the password
+- [ ] Encrypt passwords before saving to the Database. Plain text is a BIG NO.
+- [ ] The storage for JWT sign keys might be added for every user using Redis. Thus, we don't use sessions, yet
+it is possible to renew sign keys in order to expire some JWT tokens. For example, in the situation when user changed 
+the password.
+
+### Metrics, logging
+- [ ] Add something like ELK for logging.
+- [ ] Add `Prometheus` for metrics.
+- [ ] Add tracing if the monolith application will be divided into small microservices.
+
+### CI/CD
+- [ ] Add ci/cd pipeline to automate all the deployments
+
+### Database
+- [ ] Some application logic might be moved to the Database
+- [ ] Add backups
+- [ ] Add audit
+- [ ] Add row level policies
+
+### Code
+- [ ] Clean it
 
 
 ## Questions and Suggestions
