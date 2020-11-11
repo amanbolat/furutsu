@@ -5,6 +5,7 @@
 This is the project developed by me as a homework assessment for the technical interview.
 
 ## How to run
+###Option 1
 - `git clone https://github.com/amanbolat/furutsu`
 - `make dc.run`
 - `make init.data`
@@ -16,6 +17,13 @@ A few coupons will be inserted after `init.data`:
 - orange333
 - orange777
 - orange888
+
+### Option 2
+- Start the postgresql database using docker or natively
+- Run the server`PORT=9033 DB_CONN_STRING='postgres://postgres:postgres@127.0.0.1:5432/furutsu?sslmode=disable' MIGRATES_DIR=<path to migrates folder>  go run server/cmd/main.go`
+- Serve the SPA `cd web && npm run serve`
+
+ATTENTION: it was tested only on MacOS. If you use Linux or Windows machine you might have to do some tweaks.
 
 ## Task
 Develop an online e-commerce store for selling fruits, which contains the following features:
@@ -59,7 +67,7 @@ Total savings.
 Like every project there are no limits in improvement. This is the list of features and improvements that I would add
 
 ### Tests
-- [ ] Add e2e tests.
+- [ ] Add e2e  tests.
 - [ ] Add CI/CD workflow for test automation.
 - [ ] Add some edge cases to the unit tests. Such as discounts for the same product.
 

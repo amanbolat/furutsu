@@ -16,11 +16,10 @@ test.integration:
 	go test -count=1 -tags=integration ./integration_tests
 
 dc.run:
-	docker-compose up -d
+	docker-compose up -d --build
 
 dc.clean:
-	docker-compose stop
-	docker-compose rm
+	docker-compose rm -f -s
 
 init.data:
 	docker run --volume "`pwd`/sql/init_data.sql:/init_data.sql"  --network furutsu_network  -it --rm jbergknoff/postgresql-client postgres://postgres:postgres@furutsu_db:5432/furutsu \
