@@ -1,9 +1,6 @@
 name: deploy website
 
 on:
-  push:
-    branches:
-      - master
   pull_request:
     branches:
       - master
@@ -24,12 +21,14 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - run: |
-          cd web
+      - name: build project
+        working-directory: web
+        run: |
           npm install
           npm run build
       - name: create artifacts
         uses: actions/upload-artifact@v2
+        working-directory: web
         with:
           name: dist
           path: dist
