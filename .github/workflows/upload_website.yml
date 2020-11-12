@@ -58,5 +58,5 @@ jobs:
       - name: copy files
         working-directory: ${{ steps.download.outputs.download-path }}
         run: |
-          aws s3 sync ./dist/ ${{ env.BUCKET_NAME }} --delete --exclude index.html --exclude sw.js --acl public-read --cache-control public,max-age=604800
-          aws s3 cp ./dist/index.html ${{ env.BUCKET_NAME }} --acl public-read --cache-control public,max-age=0
+          aws s3 sync ./ ${{ env.BUCKET_NAME }} --delete --exclude index.html --exclude sw.js --acl public-read --cache-control public,max-age=604800
+          aws s3 cp ./index.html ${{ env.BUCKET_NAME }} --acl public-read --cache-control public,max-age=0
