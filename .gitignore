@@ -1,3 +1,5 @@
 .idea
 .pgdata
 node_modules
+.envrc
+tf/.terraform
