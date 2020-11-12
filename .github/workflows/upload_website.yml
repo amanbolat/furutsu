@@ -13,7 +13,7 @@ jobs:
       matrix:
         node-version: [12.x]
     env:
-      VUE_APP_SERVER_URL: https://furutsu.amanbolat.com
+      VUE_APP_SERVER_URL: https://api.furutsu.amanbolat.com
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -50,11 +50,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-      - name: 'Echo download path'
-        working-directory: ${{ steps.download.outputs.download-path }}
-        run: |
-          pwd
-          ls -lah
       - name: copy files
         working-directory: ${{ steps.download.outputs.download-path }}
         run: |

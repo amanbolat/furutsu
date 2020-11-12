@@ -32,11 +32,11 @@ func main() {
 			fmt.Sprintf("file://%s", cfg.MigratesDir),
 			cfg.DbConnString)
 		if err != nil {
-			logger.Warn("could not create migrate instance, retry in 5 seconds")
+			logger.WithError(err).Warn("could not create migrate instance, retry in 5 seconds")
 			return err
 		}
 		return nil
-	}, retry.Attempts(15), retry.Delay(time.Second*3))
+	}, retry.Attempts(5), retry.Delay(time.Second*3))
 	if err != nil {
 		logger.Fatalf("could not create migrate instance: %v", err)
 	}
