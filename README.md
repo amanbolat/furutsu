@@ -92,6 +92,10 @@ the password.
 - [ ] Add audit
 - [ ] Add row level policies
 
+### Other
+- [ ] Admin panel
+- [ ] Product image uploading
+
 ### Code
 - [ ] Clean it
 - [ ] Put frontend part of the project to separate repo 
