@@ -51,7 +51,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - name: 'Echo download path'
-        run: echo ${{steps.download.outputs.download-path}}
+        working-directory: ${{ steps.download.outputs.download-path }}
+        run: |
+          pwd
+          ls -lah
       - name: copy files
         working-directory: ${{ steps.download.outputs.download-path }}
         run: |
