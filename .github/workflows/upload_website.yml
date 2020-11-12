@@ -28,10 +28,9 @@ jobs:
           npm run build
       - name: create artifacts
         uses: actions/upload-artifact@v2
-        working-directory: web
         with:
           name: dist
-          path: dist
+          path: web/dist
 
   deploy:
     name: upload to aws s3
