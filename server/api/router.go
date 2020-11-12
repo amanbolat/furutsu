@@ -53,7 +53,7 @@ func NewRouter(cfg RouterConfig) *Router {
 		Output: os.Stdout,
 	}), middleware.Recover(), middleware.CORSWithConfig(middleware.CORSConfig{
 		Skipper:          middleware.DefaultSkipper,
-		AllowOrigins:     []string{"http://localhost:8080", "http://localhost:80"},
+		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete, "X-API-REQUEST-ID"},
 		AllowCredentials: true,
 	}))
