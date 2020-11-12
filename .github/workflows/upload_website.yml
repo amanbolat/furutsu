@@ -51,5 +51,5 @@ jobs:
           aws-region: us-east-1
       - name: copy files
         run: |
-          aws s3 sync ./dist/ ${{ BUCKET_NAME }} --delete --exclude index.html --exclude sw.js --acl public-read --cache-control public,max-age=604800
-          aws s3 cp ./dist/index.html ${{ BUCKET_NAME }} --acl public-read --cache-control public,max-age=0
+          aws s3 sync ./dist/ $BUCKET_NAME --delete --exclude index.html --exclude sw.js --acl public-read --cache-control public,max-age=604800
+          aws s3 cp ./dist/index.html $BUCKET_NAME --acl public-read --cache-control public,max-age=0
