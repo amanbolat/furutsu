@@ -23,7 +23,7 @@
                   .black--text.font-weight-bold.mr-2.amount-text.d-flex Amount: {{ item.amount }}
                     v-icon.ml-1(small) mdi-square-edit-outline
                   template(v-slot:input)
-                    a-input-number(:disabled="loading" :value="item.amount" :min="1" :step="1" @change="handleAmountChange(item, $event)")
+                    NumberInput(:disabled="loading" :value="item.amount" :min="1" :step="1" @change="handleAmountChange(item, $event)" inline controls size="small")
               v-list-item-subtitle(v-if="item.discount_percent")
                 .red--text.font-weight-bold Discount: {{ item.discount_percent }}%
         v-spacer
@@ -147,7 +147,7 @@ export default class CartItem extends Mixins(AppMixin) {
 }
 
 .delete-item-btn {
-  position: absolute;
+  position: absolute !important;
   bottom: 2px;
   right: 2px;
 }

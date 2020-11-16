@@ -14,7 +14,7 @@
                 v-btn(color='orange darken-2' text v-on="on" v-bind="attrs") Add to cart
               v-card
                 v-card-text.d-flex.justify-center
-                  a-input-number(v-model="addToCartAmount" :min="0" :step="1")
+                  NumberInput(v-model="addToCartAmount" :min="0" :step="1" size="small" inline controls)
                 v-card-actions
                   v-btn(@click="addProductToCart(item, addToCartAmount)") Add
             v-spacer
@@ -35,7 +35,6 @@ import AppMixin from '@/mixins/AppMixin'
 @Component
 export default class ProductList extends Mixins(AppMixin) {
   private products: object[] = []
-  private addToCartmenu = false
   private addToCartAmount = 0
 
   public created() {

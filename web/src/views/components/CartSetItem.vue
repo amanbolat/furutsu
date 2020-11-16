@@ -18,7 +18,7 @@
             .black--text.font-weight-bold.mr-2.amount-text.d-flex Amount: {{ item.amount }}
               v-icon.ml-1(small) mdi-square-edit-outline
             template(v-slot:input)
-              a-input-number(:disabled="loading" :value="item.amount" :min="1" :step="1" @change="handleAmountChange(item, $event)")
+              NumberInput(:disabled="loading" :value="item.amount" :min="1" :step="1" @change="handleAmountChange(item, $event)" inline controls size="small")
 </template>
 
 <script lang="ts">

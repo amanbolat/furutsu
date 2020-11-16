@@ -5,13 +5,12 @@ import store from './store'
 import vuetify from './plugins/vuetify'
 import './style/index.scss'
 import Notifications  from 'vue-notification'
-import {InputNumber} from 'ant-design-vue'
-import 'ant-design-vue/lib/input-number/style/index.css'
 import './filters'
+import NumberInput from '@chenfengyuan/vue-number-input'
 
 Vue.config.productionTip = false
 Vue.use(Notifications)
-Vue.use(InputNumber)
+Vue.use(NumberInput)
 
 new Vue({
   router: createRouter(),
