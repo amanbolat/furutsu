@@ -35,11 +35,13 @@ import Vuetify, {
     VChip,
     VSelect,
     VSubheader,
-    VDivider
+    VDivider,
+    VSkeletonLoader
 } from 'vuetify/lib'
 
 Vue.use(Vuetify, {
     components: {
+        VSkeletonLoader,
         VSubheader,
         VDivider,
         VSelect,

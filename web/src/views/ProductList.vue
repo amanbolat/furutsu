@@ -1,7 +1,9 @@
 <template lang="pug">
   v-container(fluid)
     v-row
-      v-col(v-for="(item, idx) in products" :key="idx" cols="12" md="6")
+      v-col(v-if="isLoading" v-for="i in 4" :key="`${i}skel`" cols="12" md="6")
+        v-skeleton-loader(type="card" class="mx-auto")
+      v-col(v-if="products" v-for="(item, idx) in products" :key="`${idx}prod`" cols="12" md="6")
         v-card.mx-auto(max-width='344')
           v-img(:src='`/img/${item.name}.jpg`' height='200px')
           v-card-title.text-capitalize
@@ -24,7 +26,6 @@
                 | Description
               v-expansion-panel-content
                 | {{ item.description }}
-
 </template>
 
 <script lang="ts">
@@ -36,17 +37,21 @@ import AppMixin from '@/mixins/AppMixin'
 export default class ProductList extends Mixins(AppMixin) {
   private products: object[] = []
   private addToCartAmount = 0
+  private isLoading = false
 
   public created() {
     this.getProductList()
   }
 
   private getProductList() {
+    this.isLoading = true
     api.get('/product').then((response) => {
       console.log(response)
       this.products = response.data.data
     }).catch((err) => {
       console.log('get products error', err)
+    }).then(() => {
+      this.isLoading = false
     })
   }
 
@@ -61,7 +66,7 @@ export default class ProductList extends Mixins(AppMixin) {
       this.addToCartAmount = 0
       this.showMessage(`Added ${amount} ${product.name}s to the cart`)
     }).catch((err) => {
-      this.showError(err)
+      console.log(err)
     })
   }
 }
