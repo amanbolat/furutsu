@@ -8,7 +8,7 @@ jobs:
   golangci:
     strategy:
       matrix:
-        go-version: [1.15.x]
+        go-version: [ 1.15.x ]
         os: ubuntu-latest
     name: lint
     runs-on: ${{ matrix.os }}
@@ -18,4 +18,4 @@ jobs:
         uses: golangci/golangci-lint-action@v2
         with:
           version: v1.32
-           working-directory: server
+          working-directory: server
