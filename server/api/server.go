@@ -3,12 +3,14 @@ package api
 import (
 	"context"
 	"fmt"
-	"github.com/amanbolat/furutsu/services/ordersrv"
-	"github.com/amanbolat/furutsu/services/paymentsrv"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"os"
 	"os/signal"
 	"time"
+
+	"github.com/amanbolat/furutsu/services/ordersrv"
+	"github.com/amanbolat/furutsu/services/paymentsrv"
+	"github.com/avast/retry-go"
+	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/amanbolat/furutsu/datastore"
 	"github.com/amanbolat/furutsu/internal/config"
@@ -30,10 +32,15 @@ func NewServer(cfg config.Config, logger *logrus.Logger) (*Server, error) {
 	}
 	connConfig.MaxConns = 10
 
-	conn, err := pgxpool.ConnectConfig(context.Background(), connConfig)
-	if err != nil {
-		return nil, err
-	}
+	var conn *pgxpool.Pool
+	err = retry.Do(func() error {
+		conn, err = pgxpool.ConnectConfig(context.Background(), connConfig)
+		if err != nil {
+			logger.WithError(err).Warn("failed to connect to database, retry in 2 seconds")
+			return err
+		}
+		return nil
+	}, retry.Attempts(5), retry.Delay(time.Second*2))
 
 	productSrv := productsrv.NewProductService(conn)
 	authSrv := authsrv.NewAuthService(conn)
@@ -63,7 +70,7 @@ func (s Server) Start(port int) {
 		}
 	}()
 
-	quit := make(chan os.Signal)
+	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

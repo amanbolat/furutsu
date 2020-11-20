@@ -2,9 +2,10 @@ package authsrv
 
 import (
 	"context"
+	"time"
+
 	"github.com/amanbolat/furutsu/internal/apperr"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"time"
 
 	"github.com/amanbolat/furutsu/datastore"
 	"github.com/amanbolat/furutsu/internal/user"

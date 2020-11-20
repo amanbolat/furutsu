@@ -1,8 +1,9 @@
 package datastore
 
 import (
-	"github.com/amanbolat/furutsu/internal/discount"
 	"strconv"
+
+	"github.com/amanbolat/furutsu/internal/discount"
 )
 
 func convertJsonbToRule(m map[string]interface{}) discount.Rule {

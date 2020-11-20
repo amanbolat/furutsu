@@ -2,8 +2,9 @@ package discount
 
 import (
 	"encoding/json"
-	"github.com/amanbolat/furutsu/internal/cart"
 	"sort"
+
+	"github.com/amanbolat/furutsu/internal/cart"
 )
 
 type Rule interface {

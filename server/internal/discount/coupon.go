@@ -1,8 +1,9 @@
 package discount
 
 import (
-	"github.com/amanbolat/furutsu/internal/cart"
 	"time"
+
+	"github.com/amanbolat/furutsu/internal/cart"
 )
 
 type Coupon struct {
@@ -51,9 +52,5 @@ func (c Coupon) IsApplicableToItems(items map[string]cart.Item) bool {
 		discAppliedAmount += a
 	}
 
-	if discAppliedAmount < 1 {
-		return false
-	}
-
-	return true
+	return discAppliedAmount >= 1
 }

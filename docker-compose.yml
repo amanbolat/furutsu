@@ -18,7 +18,6 @@ services:
     build:
       context: ./server
     container_name: furutsu_server
-    command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; ./bin/appexe'
     environment:
       PORT: 9033
       DB_CONN_STRING: postgres://postgres:postgres@furutsu_db:5432/furutsu?sslmode=disable

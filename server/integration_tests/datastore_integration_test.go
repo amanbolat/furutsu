@@ -1,18 +1,24 @@
+// +build integration
+
 package integration_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/amanbolat/furutsu/datastore"
 	"github.com/amanbolat/furutsu/internal/cart"
 	"github.com/amanbolat/furutsu/internal/discount"
 	"github.com/amanbolat/furutsu/internal/product"
 	"github.com/amanbolat/furutsu/internal/user"
+	"github.com/avast/retry-go"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -37,34 +43,37 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	fmt.Println(os.Getenv("TEST_DB_URL"))
-	retryCount := 30
+	dbConnStr := os.Getenv("TEST_DB_URL")
 
-	for {
+	var mt *migrate.Migrate
+	err := retry.Do(func() error {
 		var err error
-		conn, err = pgxpool.Connect(context.Background(), os.Getenv("TEST_DB_URL"))
+		mt, err = migrate.New(
+			fmt.Sprintf("file://%s", "../migrates"),
+			dbConnStr)
 		if err != nil {
-			if retryCount == 0 {
-				logrus.WithError(err).Fatal("no more retries")
-			}
-
-			logrus.WithError(err).Infof("could not connect to db, wait 2 seconds. %d retries left", retryCount)
-			retryCount--
-			time.Sleep(2 * time.Second)
-		} else {
-			break
+			logrus.WithError(err).Warn("could not create migrate instance, retry in 1 seconds")
+			return err
 		}
+		return nil
+	}, retry.Attempts(3), retry.Delay(time.Second*1))
+	if err != nil {
+		logrus.Fatalf("could not create migrate instance: %v", err)
 	}
 
-	file, err := ioutil.ReadFile("../sql/bootstrap.sql")
-	if err != nil {
-		logrus.WithError(err).Fatal()
+	err = mt.Up()
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		logrus.Fatal(err)
 	}
+	logrus.Info("test ")
 
-	_, err = conn.Exec(context.Background(), string(file))
-	if err != nil {
-		logrus.WithError(err).Fatal()
-	}
+	err = retry.Do(func() error {
+		conn, err = pgxpool.Connect(context.Background(), dbConnStr)
+		if err != nil {
+			logrus.WithError(err).Fatal("failed to connect to database")
+		}
+		return nil
+	}, retry.Attempts(3), retry.Delay(time.Second*1))
 
 	m.Run()
 }
@@ -254,11 +263,11 @@ func TestUpdateCartItems(t *testing.T) {
 
 func TestCartAttachDetachCoupon(t *testing.T) {
 	cds := datastore.NewCartDataStore(datastore.NewPgxConn(conn))
-	err := cds.AttachCouponToCart(testUser.Id, orangeCoupon.ID, context.Background())
+	err := cds.AttachCouponToCart(testUser.Id, orangeCoupon.Code, context.Background())
 	require.NoError(t, err)
 	userCart, err := cds.GetCartForUser(testUser.Id, context.Background())
 	require.NoError(t, err)
-	assert.Len(t, userCart.Coupons, 1)
+	assert.Len(t, userCart.Coupons, 1, userCart)
 	assert.Equal(t, userCart.Coupons[0].GetName(), orangeCoupon.Name)
 	assert.Equal(t, userCart.Coupons[0].GetExpireTime(), orangeCoupon.Expire)
 	assert.Equal(t, userCart.Coupons[0].GetPercentage(), orangeCoupon.Percent)

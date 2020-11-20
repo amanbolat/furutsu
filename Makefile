@@ -1,19 +1,22 @@
 include dev.env
 export
 
-.PHONY: fmt
 fmt:
 	cd server && gofmt -l -w .
 
-.PHONY: lint
 vet:
 	cd server && go vet ./...
 
-.PHONY: test
+lint:
+	cd server && golangci-lint run
+
+test:
+	cd server && go test -count=1 ./...
+
 test.integration:
 	docker-compose rm -s -f
-	docker-compose --file docker-compose.local_test.yml up -d --force-recreate
-	go test -count=1 -tags=integration ./integration_tests
+	docker-compose --file docker-compose.integration_test.yml up -d --force-recreate
+	cd server && go test -v -count=1 -tags=integration ./integration_tests
 
 dc.run:
 	docker-compose up -d --build

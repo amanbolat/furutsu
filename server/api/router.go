@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"os"
+
 	"github.com/amanbolat/furutsu/internal/apperr"
 	"github.com/amanbolat/furutsu/services/ordersrv"
 	"github.com/amanbolat/furutsu/services/paymentsrv"
-	"net/http"
-	"os"
 
 	"github.com/amanbolat/furutsu/internal/user"
 	"github.com/amanbolat/furutsu/services/authsrv"

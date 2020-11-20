@@ -3,6 +3,8 @@ package main
 import (
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/amanbolat/furutsu/api"
 	"github.com/amanbolat/furutsu/internal/config"
 	"github.com/avast/retry-go"
@@ -11,7 +13,6 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/sirupsen/logrus"
-	"time"
 )
 
 var cfg config.Config

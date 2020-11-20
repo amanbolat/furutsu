@@ -4,12 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"github.com/jackc/pgx/v4"
 	"time"
 
 	"github.com/amanbolat/furutsu/internal/cart"
 	"github.com/amanbolat/furutsu/internal/product"
 	"github.com/georgysavva/scany/pgxscan"
+	"github.com/jackc/pgx/v4"
 )
 
 type CartDataStore struct {
@@ -193,14 +193,14 @@ func (s CartDataStore) SetCartItemAmount(cartId, productId string, amount int, c
 func (s CartDataStore) AttachCouponToCart(userId, couponCode string, ctx context.Context) error {
 	rows, err := s.querier.Query(ctx,
 		`
-WITH utable AS (
+WITH c AS (
     SELECT id
     FROM cart
     WHERE user_id = $1
 )
 UPDATE coupon
-SET cart_id = utable.id
-FROM utable
+SET cart_id = c.id
+FROM c
 WHERE coupon.code = $2
   AND coupon.expire_at > current_timestamp`,
 		userId,

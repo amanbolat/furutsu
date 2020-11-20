@@ -99,15 +99,17 @@ func (c Cart) MarshalJSON() ([]byte, error) {
 	return json.Marshal(ps)
 }
 
+type ProductId = string
+
 type Cart struct {
 	Id     string `json:"id"`
 	UserId string `json:"user_id"`
 	// Items is a map of items
 	// <product_id:CartItem>
-	Items          map[string]Item `json:"items"`
-	DiscountSets   []ItemsSet      `json:"discount_sets"`
-	NonDiscountSet ItemsSet        `json:"non_discount_set"`
-	Coupons        []Coupon        `json:"coupons"`
+	Items          map[ProductId]Item `json:"items"`
+	DiscountSets   []ItemsSet         `json:"discount_sets"`
+	NonDiscountSet ItemsSet           `json:"non_discount_set"`
+	Coupons        []Coupon           `json:"coupons"`
 }
 
 // TotalSavings is a sum of money which could be saved
@@ -126,7 +128,7 @@ func (c Cart) TotalSavings() int {
 	return total
 }
 
-// Total is a sum of money that has to be payed for
+// Total is a sum of money that has to be paid for
 // items in the cart WITHOUT discounts
 func (c Cart) Total() int {
 	var total int
@@ -140,31 +142,9 @@ func (c Cart) Total() int {
 }
 
 // TotalForPayment is a sum of money that
-// has to be payed. Discounts are applied
+// has to be paid. Discounts are applied
 func (c Cart) TotalForPayment() int {
 	return c.Total() - c.TotalSavings()
-}
-
-func (c *Cart) SetProductAmount(p product.Product, amount int) {
-	if c.Items == nil {
-		c.Items = make(map[string]Item)
-	}
-
-	if amount < 1 {
-		delete(c.Items, p.ID)
-	}
-
-	il := Item{
-		Product: p,
-		Amount:  amount,
-	}
-
-	if oldItem, ok := c.Items[p.ID]; ok {
-		il.Amount += oldItem.Amount
-		c.Items[p.ID] = il
-	}
-
-	c.Items[p.ID] = il
 }
 
 func (c *Cart) NonDiscountSetItems() map[string]Item {
