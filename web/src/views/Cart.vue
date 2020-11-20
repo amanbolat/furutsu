@@ -1,14 +1,14 @@
 <template lang="pug">
   v-container(fluid)
     v-row(v-if="showView" dense)
-      v-col#NonDiscountSet(
+      v-col(
         cols="12"
         v-if="cart.non_discount_set"
         v-for="(item, idx) in cart.non_discount_set"
         :key="'nd'+idx"
       )
         CartItem(:is-loading="loading" :cart-item="item" @delete-item="handleDeleteItem" :items="cart.items" @change-item-amount="handleChangeItemAmount")
-      v-col#SingleDiscountSet(
+      v-col(
         cols="12"
         v-if="cart.discount_sets"
         v-for="(set, idx) in cart.discount_sets"
